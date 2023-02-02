@@ -946,12 +946,25 @@
               (suspend)
               (ja :num! (loop! f30-1))))))))
 
+(define-extern update-rco-task-strings (function symbol none))
+(define-extern rco-correct-task? (function game-task symbol))
 (defstate pickup (fuel-cell)
   :virtual #t
   :enter
     (behavior ((arg0 object) (arg1 handle))
       (set-time! (-> self state-time))
       (set! (-> self state-object) #t)
+      (cond
+        ((rco-correct-task? (the-as game-task (the int (-> self fact pickup-amount))))
+          ;; correct cell, advance
+          (update-rco-task-strings #t)
+          )
+        (else
+          ;; dont allow pickup if its the wrong thing
+          (sound-play "oof")
+          (go-virtual wait)
+          )
+        )
       (let ((t9-1 (-> (the-as (state eco-collectable) (find-parent-state)) enter))) (if t9-1 (t9-1))))
   :trans
     (behavior ()
