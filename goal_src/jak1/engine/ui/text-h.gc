@@ -833,6 +833,11 @@
   (pad-circle #x2001)
   (pad-x #x2002)
   (pad-square #x2003)
+
+  (swamp-1st-tether              #x2100)
+  (swamp-2nd-tether              #x2101)
+  (swamp-3rd-tether              #x2102)
+  (swamp-4th-tether              #x2103)
 ;; GAME-TEXT-ID ENUM ENDS
   )
 

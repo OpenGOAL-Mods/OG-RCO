@@ -283,6 +283,8 @@
   "pov-camera.o"
   "powerups.o"
   "crates.o"
+  "mods-rco-h.o"
+  "mods-rco.o"
   "hud.o"
   "hud-classes.o"
   "progress-static.o"
