@@ -436,7 +436,7 @@
     ;; Update auto-splitter
     (update-autosplit-info-jak1)
     ;; Draw info to the screen
-    (speedrun-draw-settings)
+    ;; (speedrun-draw-settings)
     (enforce-speedrun-pc-settings)
     ;; Run after-blackout speedrun setup (if needed)
     (setup-speedrun-post-blackout))

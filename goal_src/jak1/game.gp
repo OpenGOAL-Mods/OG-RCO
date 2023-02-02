@@ -2117,8 +2117,14 @@
  "mods/mod-debug.gc"
 )
 
-(goal-src "levels/test-zone/test-zone-obs.gc" "process-drawable")
+(goal-src-sequence
+  "engine/"
+  :deps ("$OUT/obj/ticky.o" "$OUT/obj/game-task-h.o" "$OUT/obj/knuth-rand.gc" "$OUT/obj/pckernel.gc" "$OUT/obj/pckernel-h.gc")
+  "mods/mods-rco-h.gc"
+  "mods/mods-rco.gc"
+  )
 
+(goal-src "levels/test-zone/test-zone-obs.gc" "process-drawable")
 
 (group-list "all-code"
   `(,@(reverse *all-gc*))

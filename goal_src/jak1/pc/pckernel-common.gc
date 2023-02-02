@@ -347,6 +347,12 @@
   (file-stream-read-word file)
   (string->int *pc-temp-string*))
 
+(defun file-stream-read-uint ((file file-stream))
+  (file-stream-seek-past-whitespace file)
+  (file-stream-read-word file)
+  (string->uint *pc-temp-string*)
+  )
+
 (defun file-stream-read-float ((file file-stream))
   (file-stream-seek-past-whitespace file)
   (file-stream-read-word file)

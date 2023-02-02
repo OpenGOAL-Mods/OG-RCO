@@ -145,6 +145,7 @@
   "Get the permanent storage for a game-task"
   (-> this task-perm-list data arg0))
 
+(define-extern rco-start-game (function none))
 (defmethod initialize! ((this game-info) (cause symbol) (save-to-load game-save) (continue-point-override string))
   "Initialize the game-info.
     The cause can be 'dead if you die, or 'game to reset everything.
@@ -215,7 +216,11 @@
        (set! (-> this enter-level-time v1-53) 0)
        (set! (-> this in-level-time v1-53) 0)
        (set! (-> this level-opened v1-53) (the-as uint 0))
-       (nop!))))
+       (nop!)
+       )
+      ;; (rco-start-game)
+     )
+    )
   (case cause
     (('game 'try)
      ;; full restart, or ran out of lives

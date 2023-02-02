@@ -791,6 +791,11 @@
   (progress-no-other-resolution-options #x1616)
   (input-opts-controller-led-reflect-heat #x1617)
 
+  (swamp-1st-tether              #x1700)
+  (swamp-2nd-tether              #x1701)
+  (swamp-3rd-tether              #x1702)
+  (swamp-4th-tether              #x1703)
+
   ;; mod text mod-base-change
   (pad-triangle #x2000)
   (pad-circle #x2001)
