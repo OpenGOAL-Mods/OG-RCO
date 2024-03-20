@@ -954,17 +954,11 @@
     (behavior ((arg0 object) (arg1 handle))
       (set-time! (-> self state-time))
       (set! (-> self state-object) #t)
-      (cond
-        ((rco-correct-task? (the-as game-task (the int (-> self fact pickup-amount))))
-          ;; correct cell, advance
-          (update-rco-task-strings #t)
-          )
-        (else
-          ;; dont allow pickup if its the wrong thing
-          (sound-play "oof")
-          (remove-setting! 'allow-progress)
-          (go-virtual wait)
-          )
+      (when (not (rco-correct-task? (the-as game-task (the int (-> self fact pickup-amount)))))
+        ;; dont allow pickup if its the wrong thing
+        (sound-play "caught-eel")
+        (remove-setting! 'allow-progress)
+        (go-virtual wait)
         )
       (let ((t9-1 (-> (the-as (state eco-collectable) (find-parent-state)) enter))) (if t9-1 (t9-1))))
   :trans

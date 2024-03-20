@@ -299,6 +299,7 @@
                      (if (and (>= (-> arg0 path-pos) 4.0) (>= 6.0 (-> arg0 path-pos))) 1 0))))
   :post pelican-post)
 
+(define-extern rco-correct-task? (function game-task symbol))
 (defstate pelican-wait-at-nest (pelican)
   :event
     (behavior ((proc process) (argc int) (message symbol) (block event-message-block))
@@ -316,7 +317,11 @@
                    (gp-1 (-> self root))
                    (s4-0 (-> (the-as process-drawable v1-13) root trans)))
               (if (< f30-0 (fabs (deg-diff (y-angle gp-1) (vector-y-angle (vector-! (new 'stack-no-clear 'vector) s4-0 (-> gp-1 trans))))))
-                (go pelican-spit))))))
+                (cond
+                  ((not (rco-correct-task? (game-task beach-pelican)))
+                    (sound-play "caught-eel"))
+                  (else
+                    (go pelican-spit))))))))
         (('touch) (send-shove-back (-> self root) proc (the-as touching-shapes-entry (-> block param 0)) 0.7 6144.0 16384.0))))
   :enter
     (behavior ((arg0 symbol))
