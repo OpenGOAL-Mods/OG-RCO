@@ -171,6 +171,7 @@
   )
 
 (define-extern rco-start-game (function none))
+(define-extern generate-rco-task-list (function uint none))
 (defmethod initialize! ((this game-info) (cause symbol) (save-to-load game-save) (continue-point-override string))
   "Initialize the game-info.
     The cause can be 'dead if you die, or 'game to reset everything.
@@ -270,9 +271,17 @@
        (set! (-> this level-opened v1-53) (the-as uint 0))
        (nop!)
        )
-     ;; if not loading a save, its a new game -> reset RCO state, re-roll list 
-     (when (not save-to-load)
-      (rco-start-game)
+      
+     (cond 
+      (save-to-load ;; loading a save -> regen list from current seed
+        (format 0 "~%perfect~%~%")
+        (generate-rco-task-list (-> *rco-settings* current-seed))
+        )
+      ((not (name= (-> this current-continue name) "title-start")) ;; new game -> reset RCO state, re-roll list
+        (format 0 "~%not perfect~%~%")
+        (inspect this)
+        (rco-start-game)
+        )
       )
      )
     )

@@ -109,10 +109,18 @@
               :shadow robber-shadow-mg
               )
 
+(define-extern rco-correct-task? (function game-task symbol))
 (defbehavior robber-event-handler robber ((arg0 process) (arg1 int) (arg2 symbol) (arg3 event-message-block))
   (case arg2
     (('attack)
-     (go robber-die)
+     (cond 
+      ((not (rco-correct-task? (game-task rolling-robbers)))
+        (sound-play "caught-eel")
+        )
+      (else 
+        (go robber-die)
+        )
+      )
      )
     )
   )

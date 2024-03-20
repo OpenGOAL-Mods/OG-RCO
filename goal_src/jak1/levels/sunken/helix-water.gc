@@ -219,6 +219,7 @@
     )
   )
 
+(define-extern rco-correct-task? (function game-task symbol))
 (defstate helix-button-idle-up (helix-button)
   :event (behavior ((proc process) (argc int) (message symbol) (block event-message-block))
     (case message
@@ -230,6 +231,9 @@
                    (not (handle->process (-> self fcell-handle)))
                    )
               (go helix-button-quick-activate)
+              )
+             ((not (rco-correct-task? (game-task sunken-slide)))
+              (sound-play "caught-eel")
               )
              (else
                (process-entity-status! self (entity-perm-status complete) #t)

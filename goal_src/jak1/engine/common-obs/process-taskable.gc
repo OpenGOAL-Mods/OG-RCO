@@ -918,8 +918,14 @@
                 (let ((maybe-cell-task (current-task (-> self tasks))))
                   (cond
                     ;; RCO - dont allow pickup if its the wrong thing
-                    ((and (= (current-status (-> self tasks)) (task-status need-reward-speech))
+                    ((and (or (= (current-status (-> self tasks)) (task-status need-reward-speech)) ;; definitely cutscene for cell
+                              (= maybe-cell-task (game-task jungle-fishgame))
+                              (= maybe-cell-task (game-task swamp-billy))
+                              )
                           (nonzero? maybe-cell-task)
+                          (!= maybe-cell-task (game-task firecanyon-assistant))
+                          (!= maybe-cell-task (game-task village2-levitator))
+                          (!= maybe-cell-task (game-task assistant-village3))
                           (not (rco-correct-task? maybe-cell-task)))
                       (sound-play "caught-eel")
                       )
