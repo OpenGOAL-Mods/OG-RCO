@@ -794,6 +794,7 @@
   #t
   )
 
+(define-extern rco-correct-task? (function game-task symbol))
 (defstate idle (process-taskable)
   :virtual #t
   :event (behavior ((proc process) (argc int) (message symbol) (block event-message-block))
@@ -912,11 +913,24 @@
                 (set! (-> gp-1 flags) (font-flags shadow kerning middle-vert large))
                 (print-game-text (lookup-text! *common-text* (-> self talk-message) #f) gp-1 #f 128 22)
                 )
-              (when (and (cpad-pressed? 0 circle) (process-grab? *target*))
-                (logclear! (-> *cpad-list* cpads 0 button0-abs 0) (pad-buttons circle))
-                (logclear! (-> *cpad-list* cpads 0 button0-rel 0) (pad-buttons circle))
-                (send-event *target* 'trans 'save (-> self old-target-pos))
-                (go-virtual play-anim)
+              
+              (when (cpad-pressed? 0 circle)
+                (let ((maybe-cell-task (current-task (-> self tasks))))
+                  (cond
+                    ;; RCO - dont allow pickup if its the wrong thing
+                    ((and (= (current-status (-> self tasks)) (task-status need-reward-speech))
+                          (nonzero? maybe-cell-task)
+                          (not (rco-correct-task? maybe-cell-task)))
+                      (sound-play "caught-eel")
+                      )
+                    ((process-grab? *target*)
+                      (logclear! (-> *cpad-list* cpads 0 button0-abs 0) (pad-buttons circle))
+                      (logclear! (-> *cpad-list* cpads 0 button0-rel 0) (pad-buttons circle))
+                      (send-event *target* 'trans 'save (-> self old-target-pos))
+                      (go-virtual play-anim)
+                      )
+                    )
+                  )
                 )
               )
             )

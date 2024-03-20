@@ -406,6 +406,7 @@
   :post pelican-post
   )
 
+(define-extern rco-correct-task? (function game-task symbol))
 (defstate pelican-wait-at-nest (pelican)
   :event (behavior ((proc process) (argc int) (message symbol) (block event-message-block))
     (case message
@@ -435,8 +436,15 @@
                       (deg-diff (y-angle gp-1) (vector-y-angle (vector-! (new 'stack-no-clear 'vector) s4-0 (-> gp-1 trans))))
                       )
                     )
+              (cond
+                ((not (rco-correct-task? (game-task beach-pelican)))
+                  (sound-play "caught-eel")
+                  )
+                (else
                  (go pelican-spit)
                  )
+                )
+              )
              )
            )
          )

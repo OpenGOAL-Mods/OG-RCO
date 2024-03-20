@@ -429,7 +429,7 @@
     ;; Update auto-splitter
     (update-autosplit-info-jak1)
     ;; Draw info to the screen
-    ;; (speedrun-draw-settings)
+    (speedrun-draw-settings)
     ;;Disable any active cheats
     (set! (-> *pc-settings* cheats) (the-as pc-cheats #x0))
     ;; Run after-blackout speedrun setup (if needed)
@@ -450,9 +450,8 @@
              (-> *speedrun-info* should-display?))
     (with-dma-buffer-add-bucket ((buf (-> (current-frame) global-buf))
                                       (bucket-id subtitle))
-      (draw-string-xy (string-format "Speedrunner Mode ~%~S ~%Category: ~S ~%Cutscene Skips ~A"
-                                    *mod-version-text*
-                                     (enum->string speedrun-category (-> *speedrun-info* category))
-                                     (-> *pc-settings* skip-movies?))
-                      buf 0 (- 220 (* 8 4)) (font-color flat-yellow) (font-flags shadow kerning))))
+      (draw-string-xy (string-format "Speedrunner Mode ~%~S ~%Seed ~D"
+                                     *mod-version-text*
+                                     (-> *rco-settings* current-seed))
+                      buf 0 (- 220 (* 8 3)) (font-color flat-yellow) (font-flags shadow kerning))))
   (none))
