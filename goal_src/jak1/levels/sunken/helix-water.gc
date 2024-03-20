@@ -157,6 +157,7 @@
             (if v1-7 (clear-collide-with-as (-> (the-as collectable (-> v1-7 0)) root))))))
       (go helix-button-idle-up)))
 
+(define-extern rco-correct-task? (function game-task symbol))
 (defstate helix-button-idle-up (helix-button)
   :event
     (behavior ((proc process) (argc int) (message symbol) (block event-message-block))
@@ -168,6 +169,9 @@
                ((and (and (-> self entity) (logtest? (-> self entity extra perm status) (entity-perm-status complete)))
                      (not (handle->process (-> self fcell-handle))))
                 (go helix-button-quick-activate))
+               ((not (rco-correct-task? (game-task sunken-slide)))
+                (sound-play "caught-eel")
+                )
                (else (process-entity-status! self (entity-perm-status complete) #t) (go helix-button-activate))))))))
   :code
     (behavior ()
