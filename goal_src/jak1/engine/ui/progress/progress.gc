@@ -854,6 +854,8 @@
                         (= v1-2 (progress-screen controller-options))
                         (= v1-2 (progress-screen mouse-options))
                         (= v1-2 (progress-screen reassign-binds-options))
+                        
+                        (= v1-2 (progress-screen rco-options))
                         )
                     )
                   )

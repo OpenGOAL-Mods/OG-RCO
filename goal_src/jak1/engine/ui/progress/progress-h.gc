@@ -138,6 +138,8 @@
   (speedrun-il-options)
   (speedrun-cat-ext-options)
 
+  (rco-options)
+
   ;; the last one!
   (max)
   )

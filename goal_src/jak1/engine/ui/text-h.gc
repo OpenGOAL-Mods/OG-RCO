@@ -838,6 +838,20 @@
   (swamp-2nd-tether              #x2101)
   (swamp-3rd-tether              #x2102)
   (swamp-4th-tether              #x2103)
+
+  (rco-options                     #x3000)
+  (no-fcs                          #x3001)
+  (no-lts                          #x3002)
+  (nms-citadel                     #x3003)
+  (no-citadel-hops                 #x3004)
+  (no-tree-hops                    #x3005)
+  (fj-no-early-temple              #x3006)
+  (fj-no-early-plant-boss          #x3007)
+  (snowy-no-gate-skip              #x3008)
+  (snowy-no-fortress-without-flut  #x3009)
+  (beach-no-early-tower            #x300a)
+  (mp-no-early-secret-cell         #x300b)
+
 ;; GAME-TEXT-ID ENUM ENDS
   )
 
