@@ -24,7 +24,7 @@ Restrictions:
 Toggle-able restrictions:
 - **No early Forbidden Temple** - Unless Top of FJ Tower cell has been chosen, Blue Eco Switch and Plant Boss cells cannot be chosen
 - **No early Plant Boss** - Unless Blue Eco Switch cell has been chosen, Plant Boss cell cannot be chosen
-- **No early Sentinel Beach Tower** - Unless Blue Eco Switch cell has been chosen, Sentinel Beach Cannon Tower cell cannot be chosen
+- **No early Beach Tower** - Unless Blue Eco Switch cell has been chosen, Sentinel Beach Cannon Tower cell cannot be chosen
 - **No Fire Canyon Skip** - Unless 20 cells have been chosen, cells from Fire Canyon (or beyond, by earlier restriction) cannot be chosen
 - **No early MP secret cell** - Unless Yellow Eco Switch cell has been chosen, Mountain Pass secret cell cannot be chosen
 - **No Tree/Rock/Stalag Hops** - Unless End of Mountain Pass cell has been chosen, Mountain Pass secret cell cannot be chosen
