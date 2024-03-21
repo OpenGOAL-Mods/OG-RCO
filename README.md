@@ -21,7 +21,7 @@ Restrictions:
 - If any Precursor Basin cells have been chosen, the Geologist's 90 orbs cell cannot be chosen before her cell for the Lightning Moles
 - If any Precursor Basin cells have been chosen, the Gambler's 90 orbs cell cannot be chosen before his cell for Dead Man's Gorge
 
-Toggle-able restrictions:
+Toggle-able restrictions (`OPTIONS` > `GAME OPTIONS` > `RANDOM CELL ORDER SETTINGS`):
 - **No early Forbidden Temple** - Unless Top of FJ Tower cell has been chosen, Blue Eco Switch and Plant Boss cells cannot be chosen
 - **No early Plant Boss** - Unless Blue Eco Switch cell has been chosen, Plant Boss cell cannot be chosen
 - **No early Beach Tower** - Unless Blue Eco Switch cell has been chosen, Sentinel Beach Cannon Tower cell cannot be chosen
