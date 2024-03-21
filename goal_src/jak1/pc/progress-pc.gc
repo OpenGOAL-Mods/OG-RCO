@@ -219,6 +219,7 @@
        'boxed-array
        :type
        game-option
+       (new 'static 'game-option :option-type (game-option-type menu) :name (text-id rco-options) :scale #t :param3 (game-option-menu rco-options))
        (new 'static
             'game-option
             :option-type (game-option-type menu)
@@ -628,6 +629,22 @@
               (update-mouse-controls! *pc-settings*)
               (none)))
        (new 'static 'game-option :option-type (game-option-type button) :name (text-id back) :scale #t)))
+
+(define *rco-options* (new 'static 'boxed-array :type game-option
+    (new 'static 'game-option :option-type (game-option-type on-off) :name (text-id fj-no-early-temple) :scale #t)
+    (new 'static 'game-option :option-type (game-option-type on-off) :name (text-id fj-no-early-plant-boss) :scale #t)
+    (new 'static 'game-option :option-type (game-option-type on-off) :name (text-id beach-no-early-tower) :scale #t)
+    (new 'static 'game-option :option-type (game-option-type on-off) :name (text-id no-fcs) :scale #t)
+    (new 'static 'game-option :option-type (game-option-type on-off) :name (text-id mp-no-early-secret-cell) :scale #t)
+    (new 'static 'game-option :option-type (game-option-type on-off) :name (text-id no-tree-hops) :scale #t)
+    (new 'static 'game-option :option-type (game-option-type on-off) :name (text-id snowy-no-fortress-without-flut) :scale #t)
+    (new 'static 'game-option :option-type (game-option-type on-off) :name (text-id snowy-no-gate-skip) :scale #t)
+    (new 'static 'game-option :option-type (game-option-type on-off) :name (text-id no-lts) :scale #t)
+    (new 'static 'game-option :option-type (game-option-type on-off) :name (text-id no-citadel-hops) :scale #t)
+    (new 'static 'game-option :option-type (game-option-type on-off) :name (text-id nms-citadel) :scale #t)
+    (new 'static 'game-option :option-type (game-option-type button) :name (text-id back) :scale #t)
+    )
+  )
 
 (define *misc-options*
   (new 'static
@@ -2038,6 +2055,7 @@
   (set! (-> *options-remap* (progress-screen speedrun-options)) *speedrun-options*)
   (set! (-> *options-remap* (progress-screen speedrun-il-options)) *speedrun-il-options*)
   (set! (-> *options-remap* (progress-screen speedrun-cat-ext-options)) *speedrun-cat-ext-options*)
+  (set! (-> *options-remap* (progress-screen rco-options)) *rco-options*)
   ;; set default params
   (set! (-> *progress-state* aspect-ratio-choice) (get-aspect-ratio))
   (set! (-> *progress-state* video-mode-choice) (get-video-mode))
@@ -2055,13 +2073,14 @@
   (set! (-> *sound-options* 2 value-to-modify) (&-> *setting-control* default dialog-volume))
   (set! (-> *yes-no-options* 0 value-to-modify) (&-> *progress-state* yes-no-choice))
   ;; our options!
-  (set! (-> *game-options-pc* 1 value-to-modify) (&-> *pc-settings* memcard-play-hints?))
-  (set! (-> *game-options-pc* 2 value-to-modify) (&-> *pc-settings* subtitles?))
-  (set! (-> *game-options-pc* 3 value-to-modify) (&-> *pc-settings* hinttitles?))
-  (set! (-> *game-options-pc* 4 value-to-modify) (&-> *setting-control* default language))
-  (set! (-> *game-options-pc* 5 value-to-modify) (&-> *progress-carousell* int-backup))
+  ;; rco-options pushed to front of list, incremented these indexes
+  (set! (-> *game-options-pc* 2 value-to-modify) (&-> *pc-settings* memcard-play-hints?))
+  (set! (-> *game-options-pc* 3 value-to-modify) (&-> *pc-settings* subtitles?))
+  (set! (-> *game-options-pc* 4 value-to-modify) (&-> *pc-settings* hinttitles?))
+  (set! (-> *game-options-pc* 5 value-to-modify) (&-> *setting-control* default language))
   (set! (-> *game-options-pc* 6 value-to-modify) (&-> *progress-carousell* int-backup))
   (set! (-> *game-options-pc* 7 value-to-modify) (&-> *progress-carousell* int-backup))
+  (set! (-> *game-options-pc* 8 value-to-modify) (&-> *progress-carousell* int-backup))
   (set! (-> *graphic-options-pc* 1 value-to-modify) (&-> *progress-carousell* int-backup))
   (set! (-> *graphic-options-pc* 3 value-to-modify) (&-> *pc-settings* vsync?))
   (set! (-> *graphic-options-pc* 5 value-to-modify) (&-> *progress-carousell* int-backup))
@@ -2088,6 +2107,17 @@
   (set! (-> *input-options* 2 value-to-modify) (&-> *pc-settings* keyboard-enabled?))
   (set! (-> *input-options* 3 value-to-modify) (&-> *pc-settings* mouse-enabled?))
   (set! (-> *input-options* 5 value-to-modify) (&-> *pc-settings* auto-hide-cursor?))
+  (set! (-> *rco-options* 0 value-to-modify) (&-> *rco-settings* fj-no-early-temple?))
+  (set! (-> *rco-options* 1 value-to-modify) (&-> *rco-settings* fj-no-early-plant-boss?))
+  (set! (-> *rco-options* 2 value-to-modify) (&-> *rco-settings* beach-no-early-tower?))
+  (set! (-> *rco-options* 3 value-to-modify) (&-> *rco-settings* no-fcs?))
+  (set! (-> *rco-options* 4 value-to-modify) (&-> *rco-settings* mp-no-early-secret-cell?))
+  (set! (-> *rco-options* 5 value-to-modify) (&-> *rco-settings* no-tree-hops?))
+  (set! (-> *rco-options* 6 value-to-modify) (&-> *rco-settings* snowy-no-fortress-without-flut?))
+  (set! (-> *rco-options* 7 value-to-modify) (&-> *rco-settings* snowy-no-gate-skip?))
+  (set! (-> *rco-options* 8 value-to-modify) (&-> *rco-settings* no-lts?))
+  (set! (-> *rco-options* 9 value-to-modify) (&-> *rco-settings* no-citadel-hops?))
+  (set! (-> *rco-options* 10 value-to-modify) (&-> *rco-settings* nms-citadel?))
   (set! (-> *gfx-ps2-options* 0 value-to-modify) (&-> *progress-carousell* int-backup))
   (set! (-> *gfx-ps2-options* 1 value-to-modify) (&-> *progress-carousell* int-backup))
   (set! (-> *gfx-ps2-options* 2 value-to-modify) (&-> *pc-settings* ps2-parts?))
@@ -3411,6 +3441,7 @@
               (progress-screen reassign-binds-options))
              (hide-progress-icons)
              (draw-options self 115 25 0.65))
+            (((progress-screen rco-options)) (hide-progress-icons) (draw-options self 115 25 0.6))
             (((progress-screen gfx-ps2-options)) (hide-progress-icons) (draw-options self 115 25 0.67))
             (((progress-screen game-settings)) (hide-progress-icons) (draw-options self 115 25 0.70))
             (((progress-screen memcard-removed) (progress-screen memcard-auto-save-error))
