@@ -35,3 +35,7 @@ Toggle-able restrictions:
 - **No Citadel Skip** - Unless Blue, Red, and Yellow Sage cells have been chosen, Green Sage cell cannot be chosen
 
 You can toggle these from the in-game pause menu: `OPTIONS` > `GAME OPTIONS` > `RANDOM CELL ORDER SETTINGS`. Note that the cell order list is generated whenever you start a new game, so toggling these settings will have no effect mid-game.
+
+## Known Bugs
+
+- You aren't prevented from the instant-collect for Scout Flies cells while on Zoomer/FlutFlut
