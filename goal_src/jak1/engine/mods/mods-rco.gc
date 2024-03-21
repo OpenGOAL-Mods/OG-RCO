@@ -250,6 +250,8 @@
       (not (paused?))
       (not (movie?)) 
       (nonzero? (-> *game-info* level-opened 0))  ;; at least been to geyser
+      (nonzero? (-> *rco-info* task-level))
+      (nonzero? (-> *rco-info* task-name))
       )
     (format (clear *rco-string*) "~29L~S ~%~34L~S"
       (lookup-text! *common-text* (-> *rco-info* task-level) #f)
