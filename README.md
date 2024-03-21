@@ -24,7 +24,7 @@ Restrictions:
 Toggle-able restrictions:
 - **No early Forbidden Temple** - Unless Top of FJ Tower cell has been chosen, Blue Eco Switch and Plant Boss cells cannot be chosen
 - **No early Plant Boss** - Unless Blue Eco Switch cell has been chosen, Plant Boss cell cannot be chosen
-- **No early Sentinel Beach Tower** - Unless Blue Eco Switch cell has been chosen, Sentinel Beach Cannon Tower cell cannot be chosen
+- **No early Beach Tower** - Unless Blue Eco Switch cell has been chosen, Sentinel Beach Cannon Tower cell cannot be chosen
 - **No Fire Canyon Skip** - Unless 20 cells have been chosen, cells from Fire Canyon (or beyond, by earlier restriction) cannot be chosen
 - **No early MP secret cell** - Unless Yellow Eco Switch cell has been chosen, Mountain Pass secret cell cannot be chosen
 - **No Tree/Rock/Stalag Hops** - Unless End of Mountain Pass cell has been chosen, Mountain Pass secret cell cannot be chosen
@@ -33,3 +33,5 @@ Toggle-able restrictions:
 - **No Lava Tube Skip** - Unless 72 cells have been chosen, cells from Lava Tube or beyond cannot be chosen
 - **No Citadel Hops** - Unless End of Lava Tube has been chosen, cells in Citadel cannot be chosen
 - **No Citadel Skip** - Unless Blue, Red, and Yellow Sage cells have been chosen, Green Sage cell cannot be chosen
+
+You can toggle these from the in-game pause menu: `OPTIONS` > `GAME OPTIONS` > `RANDOM CELL ORDER SETTINGS`. Note that the cell order list is generated whenever you start a new game, so toggling these settings will have no effect mid-game.
