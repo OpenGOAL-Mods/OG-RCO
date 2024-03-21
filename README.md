@@ -38,4 +38,4 @@ You can toggle these from the in-game pause menu: `OPTIONS` > `GAME OPTIONS` > `
 
 ## Known Bugs
 
-- You aren't prevented from the instant-collect for Scout Flies cells while on Zoomer/FlutFlut
+- You aren't prevented from the instant-collect for Scout Flies cells while on Zoomer/FlutFlut, if it's not the right cell
