@@ -222,12 +222,9 @@
       
      (cond 
       (save-to-load ;; loading a save -> regen list from current seed
-        (format 0 "~%perfect~%~%")
         (generate-rco-task-list (-> *rco-settings* current-seed))
         )
       ((not (name= (-> this current-continue name) "title-start")) ;; new game -> reset RCO state, re-roll list
-        (format 0 "~%not perfect~%~%")
-        (inspect this)
         (rco-start-game)
         )
       )
