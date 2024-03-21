@@ -858,10 +858,16 @@
     (behavior ((proc process) (argc int) (message symbol) (block event-message-block))
       (case message
         (('attack)
-         (if (-> self mushroom)
-           (increment-success-for-hint (text-id citadel-generator))
-           (increment-success-for-hint (text-id citadel-generator-no-mushroom)))
-         (go citb-generator-break))
+          (cond
+            ((and (< 1 (-> self entity extra perm task))
+                  (not (rco-correct-task? (-> self entity extra perm task))))
+              ;; RCO prevent pickup
+              (sound-play "caught-eel"))
+            (else
+              (if (-> self mushroom)
+                (increment-success-for-hint (text-id citadel-generator))
+                (increment-success-for-hint (text-id citadel-generator-no-mushroom)))
+              (go citb-generator-break))))
         (('trigger) #t)))
   :exit
     (behavior ()
