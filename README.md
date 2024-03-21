@@ -6,7 +6,7 @@ Jak 1 but you must collect Power Cells in some specific order, randomly determin
 
 ## Settings (preventing softlocks / required speedrun tech)
 
-Some cell orderings would be impossible, like if the very first cell chosen was from Lava Tube. To avoid these cases, there are a handful of restrictions enforced when randomly choosing cells. Additionally, depending on which speedrun tricks you are comfortable with, you can toggle other restrictions on/off. (shoutout to Six & Dexz again for originally working these out)
+Some cell orderings would be impossible, like if the very first cell chosen was from Lava Tube. To avoid these cases, there are a handful of restrictions enforced when randomly choosing cells. Additionally, depending on which speedrun tricks you are comfortable with, you can toggle other restrictions on/off. (shoutout to Six & Dexz again for originally working out most of these)
 
 Restrictions:
 - Unless all 4 Geyser Rock cells have been chosen, cells outside Geyser Rock cannot be chosen (the first 4 cells are always from Geyser Rock)
@@ -24,7 +24,9 @@ Restrictions:
 Toggle-able restrictions:
 - **No early Forbidden Temple** - Unless Top of FJ Tower cell has been chosen, Blue Eco Switch and Plant Boss cells cannot be chosen
 - **No early Plant Boss** - Unless Blue Eco Switch cell has been chosen, Plant Boss cell cannot be chosen
+- **No early Sentinel Beach Tower** - Unless Blue Eco Switch cell has been chosen, Sentinel Beach Cannon Tower cell cannot be chosen
 - **No Fire Canyon Skip** - Unless 20 cells have been chosen, cells from Fire Canyon (or beyond, by earlier restriction) cannot be chosen
+- **No early MP secret cell** - Unless Yellow Eco Switch cell has been chosen, Mountain Pass secret cell cannot be chosen
 - **No Tree/Rock/Stalag Hops** - Unless End of Mountain Pass cell has been chosen, Mountain Pass secret cell cannot be chosen
 - **No Snowy Fort w/o FlutFlut** - Unless Sentinel Beach FlutFlut cell has been chosen, the Snowy Fort Gate cell cannot be chosen
 - **No Snowy Fort break-in** - Unless Snowy Fort Gate cell has been chosen, the cell inside Snowy Fort and Snowy Scout Flies cell cannot be chosen
