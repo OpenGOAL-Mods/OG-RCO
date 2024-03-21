@@ -483,10 +483,25 @@
                       )
                  (return #f)
                  )
-             (increment-success-for-hint (text-id sidekick-hint-crate-iron))
-             (increment-success-for-hint (text-id training-ironcrate))
-             (send-event arg0 'get-attack-count 1)
-             (go-virtual die #f (the-as int s5-0))
+
+             (cond
+              ((and (= (-> self type) crate-buzzer)
+                    *target* (>= (-> *target* fact buzzer) 6.0)
+                    (not (rco-correct-task? (-> self entity extra perm task)))
+                    (or (logtest? (-> *target* control root-prim prim-core action) (collide-action racer))
+                        (logtest? (-> *target* control root-prim prim-core action) (collide-action flut)))
+                    )
+                ;; RCO prevent pickup
+                (sound-play "caught-eel")
+                (return #f)
+                )
+              (else
+                (increment-success-for-hint (text-id sidekick-hint-crate-iron))
+                (increment-success-for-hint (text-id training-ironcrate))
+                (send-event arg0 'get-attack-count 1)
+                (go-virtual die #f (the-as int s5-0))
+                )
+              )
              )
             (else
               (when (and (!= s4-0 (-> self incomming-attack-id)) (= (-> self root trans y) (-> self base y)))

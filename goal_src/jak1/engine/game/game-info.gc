@@ -271,15 +271,6 @@
        (set! (-> this level-opened v1-53) (the-as uint 0))
        (nop!)
        )
-      
-     (cond 
-      (save-to-load ;; loading a save -> regen list from current seed
-        (generate-rco-task-list (-> *rco-settings* current-seed))
-        )
-      ((not (name= (-> this current-continue name) "title-start")) ;; new game -> reset RCO state, re-roll list
-        (rco-start-game)
-        )
-      )
      )
     )
   (case cause
@@ -335,6 +326,18 @@
                                              )
                                            (suspend)
                                            (start arg0 arg2)
+                                           ;; RCO setup
+                                           (when (= arg1 'game)
+                                            (cond 
+                                              (arg3 ;; loading a save -> regen list from current seed
+                                                (generate-rco-task-list (-> *rco-settings* current-seed))
+                                                )
+                                              ((not (name= (-> arg2 name) "title-start")) ;; new game -> reset RCO state, re-roll list
+                                                (rco-start-game)
+                                                )
+                                              )
+                                            )
+
                                            (none)
                                            )
                               (-> this mode) cause (get-or-create-continue! this) save-to-load

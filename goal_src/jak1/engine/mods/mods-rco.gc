@@ -24,6 +24,7 @@
   ;; set the seed which will be used for generating checkpoint list
   (knuth-rand-init (the int64 seed))
   
+  (set! (-> *rco-info* task-list-idx) 0)
   (dotimes (i 116)
     (set! (-> *tasks-used* i) #f)
     )
@@ -237,7 +238,6 @@
     (set! (-> *rco-settings* current-seed) (knuth-rand-next-int))
     )
   (generate-rco-task-list (-> *rco-settings* current-seed))
-  (set! (-> *rco-info* task-list-idx) 0)
   (update-rco-task-strings #f)
   (none)
   )
@@ -266,7 +266,7 @@
 
 (defun rco-run-each-frame ()
   ;; check if current task is complete (loading save)
-  (when (and (< (-> *rco-info* task-list-idx) 101) (task-complete? *game-info* (-> *rco-info* task-list (-> *rco-info* task-list-idx))))
+  (when (and *target* (< (-> *rco-info* task-list-idx) 101) (task-complete? *game-info* (-> *rco-info* task-list (-> *rco-info* task-list-idx))))
     (update-rco-task-strings #t) ;; increment to next task
     )
 
