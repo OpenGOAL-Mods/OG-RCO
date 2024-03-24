@@ -1350,6 +1350,8 @@
 
 (method-set! fuel-cell 29 fuel-cell-animate)
 
+(define-extern update-rco-task-strings (function symbol none))
+(define-extern rco-correct-task? (function game-task symbol))
 (defstate wait (fuel-cell)
   :virtual #t
   :event (behavior ((proc process) (argc int) (message symbol) (block event-message-block))
@@ -1365,10 +1367,19 @@
                          )
                     )
                )
-      (add-setting! 'allow-progress #f 0.0 0)
-      (apply-settings *setting-control*)
-      (logclear! (-> self mask) (process-mask actor-pause))
-      (go-virtual pickup #f (process->handle proc))
+      (cond
+        ((not (rco-correct-task? (the-as game-task (the int (-> self fact pickup-amount)))))
+          ;; dont allow pickup if its the wrong thing
+          (sound-play "caught-eel")
+          (remove-setting! 'allow-progress)
+          )
+        (else
+          (add-setting! 'allow-progress #f 0.0 0)
+          (apply-settings *setting-control*)
+          (logclear! (-> self mask) (process-mask actor-pause))
+          (go-virtual pickup #f (process->handle proc))
+          )
+        )
       )
     (cond
       ((= message 'trans)
@@ -1439,8 +1450,6 @@
     )
   )
 
-(define-extern update-rco-task-strings (function symbol none))
-(define-extern rco-correct-task? (function game-task symbol))
 (defstate pickup (fuel-cell)
   :virtual #t
   :enter (behavior ((arg0 object) (arg1 handle))
