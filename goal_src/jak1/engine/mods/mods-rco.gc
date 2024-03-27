@@ -180,6 +180,12 @@
                   )
               ;; require yellow switch before MP secret cell
               )
+            ((and (-> *rco-settings* no-boulder-skip?)
+                  (not (>= idx 45))
+                  (> rand-idx 65)  ;; anything after rolling-buzzer (last hub2 cell)
+                  )
+              ;; require 45 cells before any MP or beyond cells
+              )
             (else
               ;; OK to use this game-task-idx!
               (format 0 "RCO - idx ~D rand-idx ~D game-task-idx ~D using ~S ~%" idx rand-idx game-task-idx (game-task->string game-task-idx))

@@ -638,6 +638,7 @@
     ;; (format file "  (prevent-gambler-orb-softlock? ~A)~%" (-> obj prevent-gambler-orb-softlock?))
     (format file "  (beach-no-early-tower? ~A)~%" (-> obj beach-no-early-tower?))
     (format file "  (mp-no-early-secret-cell? ~A)~%" (-> obj mp-no-early-secret-cell?))
+    (format file "  (no-boulder-skip? ~A)~%" (-> obj no-boulder-skip?))
 
     (format file "  )~%")
     (file-stream-close file)
@@ -715,6 +716,7 @@
                 ;; (("prevent-gambler-orb-softlock?") (set! (-> obj prevent-gambler-orb-softlock?) (file-stream-read-symbol file)))
                 (("beach-no-early-tower?") (set! (-> obj beach-no-early-tower?) (file-stream-read-symbol file)))
                 (("mp-no-early-secret-cell?") (set! (-> obj mp-no-early-secret-cell?) (file-stream-read-symbol file)))
+                (("no-boulder-skip?") (set! (-> obj no-boulder-skip?) (file-stream-read-symbol file)))
                 )
               )
             )

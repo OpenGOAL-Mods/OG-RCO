@@ -13,6 +13,7 @@
     (task-name        text-id)
     )
   )
+
 (define *cell-list* (the-as (array game-task) (new 'static 'boxed-array :type game-task :length 101 :allocated-length 101
   (game-task training-gimmie)  ;; 0
   (game-task training-door)

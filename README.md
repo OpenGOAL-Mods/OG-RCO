@@ -26,6 +26,7 @@ Toggle-able restrictions:
 - **No early Plant Boss** - Unless Blue Eco Switch cell has been chosen, Plant Boss cell cannot be chosen
 - **No early Beach Tower** - Unless Blue Eco Switch cell has been chosen, Sentinel Beach Cannon Tower cell cannot be chosen
 - **No Fire Canyon Skip** - Unless 20 cells have been chosen, cells from Fire Canyon (or beyond, by earlier restriction) cannot be chosen
+- **No Boulder Skip** - Unless 45 cells have been chosen, cells from Mountain Pass (or beyond, by earlier restriction) cannot be chosen
 - **No early MP secret cell** - Unless Yellow Eco Switch cell has been chosen, Mountain Pass secret cell cannot be chosen
 - **No Tree/Rock/Stalag Hops** - Unless End of Mountain Pass cell has been chosen, Mountain Pass secret cell cannot be chosen
 - **No Snowy Fort w/o FlutFlut** - Unless Sentinel Beach FlutFlut cell has been chosen, the Snowy Fort Gate cell cannot be chosen
