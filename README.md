@@ -2,7 +2,9 @@
 
 Jak 1 but you must collect Power Cells in some specific order, randomly determined when you start a new game! If you try to collect the incorrect cell, you won't be able to. Once you collect the specified cell, the next in the list is revealed. [Original idea and version](https://teamrun.web.app/rco) by SixRock and Dexz.
 
-<img src="https://github.com/OpenGOAL-Mods/OG-RCO/assets/2515356/f6c5bbcf-627d-43af-9571-654042cf19f2" width="50%"/>
+<p align="center">
+  <img src="https://github.com/OpenGOAL-Mods/OG-RCO/assets/2515356/f6c5bbcf-627d-43af-9571-654042cf19f2" width="50%"/>
+</p>
 
 ## Settings (preventing softlocks / required speedrun tech)
 
