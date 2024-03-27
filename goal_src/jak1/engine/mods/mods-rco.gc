@@ -264,7 +264,7 @@
 
 (defun rco-run-each-frame ()
   ;; check if current task is complete (loading save)
-  (when (and *target* (< (-> *rco-info* task-list-idx) 101) (task-complete? *game-info* (-> *rco-info* task-list (-> *rco-info* task-list-idx))))
+  (while (and *target* (< (-> *rco-info* task-list-idx) 101) (task-complete? *game-info* (-> *rco-info* task-list (-> *rco-info* task-list-idx))))
     (update-rco-task-strings #t) ;; increment to next task
     )
 

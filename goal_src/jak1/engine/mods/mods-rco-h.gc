@@ -276,10 +276,10 @@
   (text-id swamp-billy)
   (text-id swamp-flutflut)
   (text-id swamp-battle)
-  (text-id swamp-1st-tether)
-  (text-id swamp-2nd-tether) ;; 40
-  (text-id swamp-3rd-tether)
-  (text-id swamp-4th-tether)
+  (text-id swamp-2nd-tether) 
+  (text-id swamp-3rd-tether) ;; 40
+  (text-id swamp-4th-tether) 
+  (text-id swamp-1st-tether) 
   (text-id generic-buzzer)
   (text-id sunken-platforms)
   (text-id sunken-pipe)
