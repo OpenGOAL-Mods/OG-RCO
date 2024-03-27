@@ -35,4 +35,6 @@ Toggle-able restrictions:
 - **No Citadel Hops** - Unless End of Lava Tube has been chosen, cells in Citadel cannot be chosen
 - **No Citadel Skip** - Unless Blue, Red, and Yellow Sage cells have been chosen, Green Sage cell cannot be chosen
 
-You can toggle these from the in-game pause menu: `OPTIONS` > `GAME OPTIONS` > `RANDOM CELL ORDER SETTINGS`. Note that the cell order list is generated whenever you start a new game, so toggling these settings will have no effect mid-game.
+You can toggle these from the in-game pause menu: `OPTIONS` > `GAME OPTIONS` > `RANDOM CELL ORDER SETTINGS`.
+
+**NOTE: the cell order list is generated whenever you start a new game, so toggling these settings mid-game will have no effect.**
