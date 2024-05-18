@@ -16,6 +16,7 @@
 
 
 (defmethod can-activate? ((this jungle-elevator))
+  ;; rco Change the activate condtion of the button conditionally dependant on the fj-no-early-plant-boss setting to prevent casuals from locking their file.
   (and ((method-of-type plat-button can-activate?) this) (if (-> *rco-settings* fj-no-early-plant-boss?) (or
                                                           (task-complete? *game-info* (game-task jungle-eggtop))
                                                           (= (-> *rco-info* task-list (-> *rco-info* task-list-idx)) 2)
