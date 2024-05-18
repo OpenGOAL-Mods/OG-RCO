@@ -16,8 +16,14 @@
 
 
 (defmethod can-activate? ((this jungle-elevator))
-  (and ((method-of-type plat-button can-activate?) this) (task-complete? *game-info* (game-task jungle-tower)))
+  (and ((method-of-type plat-button can-activate?) this) (if (-> *rco-settings* fj-no-early-plant-boss?) (or
+                                                          (task-complete? *game-info* (game-task jungle-eggtop))
+                                                          (= (-> *rco-info* task-list (-> *rco-info* task-list-idx)) 2)
+                                                          (task-complete? *game-info* (game-task jungle-plant))
+                                                          (= (-> *rco-info* task-list (-> *rco-info* task-list-idx)) 6))
+                                                          (task-complete? *game-info* (game-task jungle-tower))
   )
+  ))
 
 (defstate plat-button-move-downward (jungle-elevator)
   :virtual #t
