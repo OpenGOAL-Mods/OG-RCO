@@ -1865,7 +1865,7 @@
   )
 
 ;; method 16 level-group (debug text stuff)
-
+(define-extern rco-continue-point-check (function none))
 (defmethod level-update ((this level-group))
 
   ;; this does nothing...
@@ -1934,6 +1934,9 @@
         )
       )
     )
+
+  ;; special RCO continue-point checks to prevent softlocks/required skips
+  (rco-continue-point-check)
 
   ;; determine vis info idx for each level
   (dotimes (v1-67 (-> this length))

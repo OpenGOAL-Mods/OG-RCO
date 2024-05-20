@@ -186,6 +186,12 @@
                   )
               ;; require 45 cells before any MP or beyond cells
               )
+            ((and (-> *rco-settings* no-klaww-skip?)
+                  (not (-> *tasks-used* (game-task ogre-boss)))
+                  (> rand-idx 66)  ;; anything after ogre-boss
+                  )
+              ;; require klaww before anything else in MP or beyond cells
+              )
             (else
               ;; OK to use this game-task-idx!
               (format 0 "RCO - idx ~D rand-idx ~D game-task-idx ~D using ~S ~%" idx rand-idx game-task-idx (game-task->string game-task-idx))
@@ -265,6 +271,34 @@
     (with-dma-buffer-add-bucket ((buf (-> (current-frame) global-buf)) (bucket-id debug-no-zbuf))
       (draw-string-xy-scaled *rco-string*
         buf 256 205 (font-color default) (font-flags shadow kerning large middle) 0.4)
+      )
+    )
+  (none)
+  )
+
+;; continue-point adjustments to prevent softlocks / required skips
+(defun rco-continue-point-check ()
+  (case (-> *game-info* current-continue name) :comp name=
+    (('firecanyon-end)
+      (when (and (not (task-complete? *game-info* (game-task firecanyon-end)))
+                 (!= (-> *rco-info* task-list (-> *rco-info* task-list-idx)) (game-task firecanyon-end))
+                 )
+        ;; swap firecanyon-end -> firecanyon-start if we dont have the cell and it isn't the active cell
+        (set-continue! *game-info* "firecanyon-start")
+        )
+      )
+    (('jungle-tower)
+      (when (and (-> *rco-settings* fj-no-early-plant-boss?)
+                 (not (task-complete? *game-info* (game-task jungle-eggtop)))
+                 (!= (-> *rco-info* task-list (-> *rco-info* task-list-idx)) (game-task jungle-plant))
+                 (!= (-> *rco-info* task-list (-> *rco-info* task-list-idx)) (game-task jungle-eggtop))
+                 )
+        ;; swap jungle-tower -> jungle-start if we dont have blue switch cell and the active cell isn't a temple one
+        (set-continue! *game-info* "jungle-start")
+        )
+      )
+    (else
+      ;; (format 0 "some other checkpoint ~A~%" (-> *game-info* current-continue name))
       )
     )
   (none)
