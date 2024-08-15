@@ -47,7 +47,6 @@
 ;; where we store the input progress for the cheat codes. make sure there's enough space for all cheats.
 (define *pc-cheat-temp* (new 'global 'inline-array 'uint8 PC_CHEAT_MAX))
 
-(define-extern mods-run-each-frame (function (none)))
 (defmethod update-cheats ((obj pc-settings-jak1))
   "run cheats."
   ;; first check for cheat inputs.
@@ -261,7 +260,6 @@
   "update speedrun module"
   (with-profiler "speedrun-update"
     (speedrun-mode-update))
-  (mods-run-each-frame)
   (none))
 
 (defmethod update-video-hacks ((obj pc-settings-jak1))
