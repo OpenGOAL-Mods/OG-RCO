@@ -820,7 +820,8 @@
   (beach-no-early-tower            #x300a)
   (mp-no-early-secret-cell         #x300b)
   (no-boulder-skip                 #x300c)
-
+  (no-klaww-skip                   #x300d)
+  
 ;; GAME-TEXT-ID ENUM ENDS
   )
 

@@ -278,6 +278,7 @@
     (beach-no-early-tower? symbol)
     (mp-no-early-secret-cell? symbol)
     (no-boulder-skip? symbol)
+    (no-klaww-skip? symbol)
     )
   (:methods
     (new (symbol type) _type_)
@@ -355,6 +356,7 @@
   (set! (-> obj beach-no-early-tower?) #f)
   (set! (-> obj mp-no-early-secret-cell?) #f)
   (set! (-> obj no-boulder-skip?) #f)
+  (set! (-> obj no-klaww-skip?) #f)
 
   (none))
 

@@ -1193,7 +1193,7 @@
   0)
 
 ;; method 16 level-group (debug text stuff)
-
+(define-extern rco-continue-point-check (function none))
 (defmethod level-update ((this level-group))
   ;; this does nothing...
   (camera-pos)
@@ -1237,6 +1237,8 @@
                 (set! s4-2 (cdr s4-2))
                 (set! s1-0 (the-as continue-point (car s4-2)))))
             (set-continue! *game-info* s3-0))))))
+  ;; special RCO continue-point checks to prevent softlocks/required skips
+  (rco-continue-point-check)
   ;; determine vis info idx for each level
   (dotimes (v1-67 (-> this length))
     (let ((a0-26 (-> this level v1-67)))
