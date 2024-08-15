@@ -26,6 +26,28 @@
       
       (rco-run-each-frame)
 
+      (when (and
+                (string= (the-as string (-> *game-info* current-continue name)) "firecanyon-end")
+                (not (task-closed? (game-task firecanyon-end) (task-status need-resolution)))
+                (not (logtest? (-> *target* control root-prim prim-core action) (collide-action racer)))
+              )
+           (let ((a1-3
+                   (new 'stack 'font-context *font-default-matrix* 56 160 0.0 (font-color default) (font-flags shadow kerning))
+                   )
+                 )
+             (let ((v1-5 a1-3))
+               (set! (-> v1-5 width) (the float 400))
+               )
+             (let ((v1-6 a1-3))
+               (set! (-> v1-6 height) (the float 96))
+               )
+             (set! (-> a1-3 flags) (font-flags shadow kerning middle middle-vert large))
+             ;;(print-game-text "PRESS <PAD_TRIANGLE> TO DIE" a1-3 #f 128 22)
+             (print-game-text "PRESS TRIANGLE TO GO BACK" a1-3 #f 128 22)
+             )
+        (when (cpad-pressed? 0 triangle) (start 'play (get-continue-by-name *game-info* "village1-hut")))
+      )
+
       (if *show-input-display* 
         (input-display-on)
         (input-display-off)
