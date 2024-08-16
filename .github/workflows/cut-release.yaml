@@ -22,12 +22,12 @@ jobs:
     uses: open-goal/mod-bundling-tools/.github/workflows/mod-bundler.yml@v1
     with:
       semverBump: ${{ inputs.bump }}
-      metadataName: "Test Mod Bundle"
-      metadataDescription: "This is a test mod bundle. 2"
+      metadataName: "Random Cell Order"
+      metadataDescription: "Jak 1 but you must pick up cells in the (random) specified order. Check the website for more info on toggle-able settings."
       metadataSupportedGames: "jak1"
-      metadataAuthors: "barg,vaser"
-      metadataTags: "rng,gameplay-mod"
-      metadataWebsiteUrl: "https://www.example.com/this/is/optional"
+      metadataAuthors: "barg,SixRock,Dexz"
+      metadataTags: "speedrunning,challenge,gameplay-mod,rng"
+      metadataWebsiteUrl: "https://github.com/OpenGOAL-Mods/OG-RCO/blob/main/README.md"
       skipMacOS: true
       skipLinux: true
       toolingBinaryDir: "out/build/Release/bin"
