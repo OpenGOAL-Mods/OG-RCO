@@ -25,6 +25,22 @@
   ;;(increase-power-cell-by-one) This is a call to increase-power-cell-by-one defined in mod-common-functions.gc
   (if *show-input-display* (input-display-on) (input-display-off))
 
+  (when *debug-segment*
+
+      (let ((gp-0 (new 'stack 'font-context *font-default-matrix* 10 150 0.0 (font-color default) (font-flags shadow kerning))))
+        (let ((v1-53 gp-0)) (set! (-> v1-53 width) (the float 1440)))
+        (let ((v1-54 gp-0)) (set! (-> v1-54 height) (the float 1380)))
+        (let ((v1-55 gp-0)) (set! (-> v1-55 scale) 0.5))
+        (set! (-> gp-0 flags) (font-flags kerning large))
+        (print-game-text-scaled (string-format "~S DEBUG~%X:~D~%Y:~D~%Z:~F~%"
+                                               (string-upcase "RCO" *pc-temp-string*)
+                                               (-> *rco-settings* current-seed)
+                                               (if (-> *rco-settings* no-lts?) 0 1)
+                                               (/ 4 (meters 1)))
+                                1.0
+                                gp-0
+                                128))
+  )
   (rco-run-each-frame)
 
   ;; ensure orb-placer is spawned/killed as requested, debug menu is updated
@@ -74,7 +90,7 @@
        ;; Code here runs as soon as you pickup small green eco
        )
       (((pickup-type eco-green))
-       ;; Code here runs as soon as you pickup big green eco 
+       ;; Code here runs as soon as you pickup big green eco
        ))
     (when from-vent?
       ;; Code here runs only if the eco was picked up from a vent
