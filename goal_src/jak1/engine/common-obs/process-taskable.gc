@@ -601,7 +601,8 @@
                   (let ((maybe-cell-task (current-task (-> self tasks))))
                     (cond
                       ;; RCO - dont allow pickup if its the wrong thing
-                    ((and (or (= (current-status (-> self tasks)) (task-status need-reward-speech)) ;; definitely cutscene for cell
+                    ((and
+                      (or (= (current-status (-> self tasks)) (task-status need-reward-speech)) ;; definitely cutscene for cell
                               (= maybe-cell-task (game-task jungle-fishgame))
                               (= maybe-cell-task (game-task swamp-billy))
                               )
@@ -609,10 +610,13 @@
                             (!= maybe-cell-task (game-task firecanyon-assistant))
                             (!= maybe-cell-task (game-task village2-levitator))
                             (!= maybe-cell-task (game-task assistant-village3))
-                            (not (rco-correct-task? maybe-cell-task)))
+                            (!= maybe-cell-task (game-task lavatube-start))
+                            (not (rco-correct-task? maybe-cell-task))
+                            )
                         (sound-play "caught-eel")
                         )
-                      ((process-grab? *target*)
+                      (else
+                      (process-grab? *target*)
                       (logclear! (-> *cpad-list* cpads 0 button0-abs 0) (pad-buttons circle))
                       (logclear! (-> *cpad-list* cpads 0 button0-rel 0) (pad-buttons circle))
                       (send-event *target* 'trans 'save (-> self old-target-pos))
