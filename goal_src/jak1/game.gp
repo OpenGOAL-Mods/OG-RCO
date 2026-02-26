@@ -218,15 +218,15 @@
     )
   )
 
-(defmacro build-custom-level (name)
+(defmacro build-custom-level (name &key (force-run #f) &key (gen-fr3 #t))
   (let* ((path (string-append "custom_assets/jak1/levels/" name "/" name ".jsonc")))
-    `(defstep :in ,path
+    `(defstep :in '(,path ,(symbol->string force-run) ,(symbol->string gen-fr3))
               :tool 'build-level
               :out '(,(string-append "$OUT/obj/" name ".go")))))
 
-(defmacro build-actor (name &key (gen-mesh #f))
+(defmacro build-actor (name &key (gen-mesh #f) &key (force-run #f) &key (texture-bucket 0))
   (let* ((path (string-append "custom_assets/jak1/models/custom_levels/" name ".glb")))
-    `(defstep :in '(,path ,(symbol->string gen-mesh))
+    `(defstep :in '(,path ,(symbol->string gen-mesh) ,(symbol->string force-run) ,(if (integer? texture-bucket) (int->string texture-bucket) (symbol->string texture-bucket)))
               :tool 'build-actor
               :out '(,(string-append "$OUT/obj/" name "-ag.go")))))
 
@@ -2047,6 +2047,7 @@
  "common-obs/plat.gc"
  "common-obs/plat-button.gc"
  "common-obs/plat-eco.gc"
+ "common-obs/linear-plat.gc"
  "common-obs/ropebridge.gc"
  "common-obs/ticky.gc"
  )
@@ -2122,9 +2123,11 @@
   :deps ("$OUT/obj/ticky.o" "$OUT/obj/game-task-h.o" "$OUT/obj/knuth-rand.gc" "$OUT/obj/pckernel.gc" "$OUT/obj/pckernel-h.gc")
   "mods/mods-rco-h.gc"
   "mods/mods-rco.gc"
-  )
+  "mods/mods-rco-tests.gc"
+)
 
 (goal-src "levels/test-zone/test-zone-obs.gc" "process-drawable")
+
 
 (group-list "all-code"
   `(,@(reverse *all-gc*))

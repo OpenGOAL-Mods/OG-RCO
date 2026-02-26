@@ -6,6 +6,7 @@
 #include "common/repl/repl_wrapper.h"
 #include "common/util/FileUtil.h"
 #include "common/util/diff.h"
+#include "common/util/font/font_utils_korean.h"
 #include "common/util/string_util.h"
 #include "common/util/term_util.h"
 #include "common/util/unicode_util.h"
@@ -14,7 +15,7 @@
 #include "goalc/compiler/Compiler.h"
 
 #include "fmt/color.h"
-#include "fmt/core.h"
+#include "fmt/format.h"
 #include "third-party/CLI11.hpp"
 
 void setup_logging(const bool disable_ansi_colors) {
@@ -37,6 +38,7 @@ int main(int argc, char** argv) {
   std::string game = "jak1";
   int nrepl_port = -1;
   fs::path project_path_override;
+  fs::path iso_path_override;
 
   // TODO - a lot of these flags could be deprecated and moved into `repl-config.json`
   CLI::App app{"OpenGOAL Compiler / REPL"};
@@ -49,6 +51,7 @@ int main(int argc, char** argv) {
   app.add_option("-g,--game", game, "The game name: 'jak1' or 'jak2'");
   app.add_option("--proj-path", project_path_override,
                  "Specify the location of the 'data/' folder");
+  app.add_option("--iso-path", iso_path_override, "Specify the location of the 'iso_data/' folder");
   define_common_cli_arguments(app);
   app.validate_positionals();
   CLI11_PARSE(app, argc, argv);
@@ -83,6 +86,16 @@ int main(int argc, char** argv) {
   auto startup_file = REPL::load_user_startup_file(username, game_version);
   // Load the user's REPL config
   auto repl_config = REPL::load_repl_config(username, game_version, nrepl_port);
+
+  // Check for a custom ISO path before we instantiate the compiler.
+  if (!iso_path_override.empty()) {
+    if (!fs::exists(iso_path_override)) {
+      lg::error("Error: iso path override '{}' does not exist", iso_path_override.string());
+      return 1;
+    }
+    file_util::set_iso_data_dir(iso_path_override);
+    repl_config.iso_path = iso_path_override.string();
+  }
 
   // Init Compiler
   std::unique_ptr<Compiler> compiler;

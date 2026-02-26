@@ -11,12 +11,14 @@
 
 (deftype fin-door (process-hidden) ())
 
+
 (deftype final-door (process-drawable) ()
   (:state-methods
    idle)
   (:methods
    (final-door-method-21 (_type_) none)
    (open (symbol) _type_ :state)))
+
 
 (defskelgroup *power-left-sg*
   power-left
@@ -110,7 +112,9 @@
 
 (deftype power-left (final-door) ())
 
+
 (deftype power-right (final-door) ())
+
 
 (defstate idle (power-left)
   :virtual #t
@@ -151,6 +155,7 @@
    (jump () _type_ :state)
    (idle () _type_ :state)))
 
+
 (defstate jump (powercellalt)
   :virtual #t
   :code
@@ -163,7 +168,7 @@
         (until (time-elapsed? (-> self state-time) (seconds 1))
           (let ((f0-2 (the float (- (current-time) (-> self state-time))))) (eval-position! gp-1 f0-2 (-> self root trans)))
           (transform-post)
-          (spawn (-> self part) (the-as vector (-> self root root-prim prim-core)))
+          (spawn (-> self part) (-> self root root-prim prim-core world-sphere))
           (suspend)
           (if (nonzero? (-> self skel)) (ja :num! (loop! 0.5)))))
       (set! (-> self root trans quad) (-> self jump-pos quad))
@@ -173,7 +178,7 @@
       (process-spawn part-tracker
                      :init
                      part-tracker-init
-                     (-> *part-group-id-table* 4)
+                     group-spin-hit
                      -1
                      #f
                      #f
@@ -211,7 +216,7 @@
   (set-vector! (-> self root scale) 0.5 0.5 0.5 1.0)
   (set! (-> self index) arg3)
   (initialize-skeleton self *powercellalt-sg* '())
-  (set! (-> self part) (create-launch-control (-> *part-group-id-table* 63) self))
+  (set! (-> self part) (create-launch-control group-fuel-cell-starburst self))
   enter-state
   (-> self root trans)
   (-> self jump-pos)
@@ -263,7 +268,7 @@
                   (t9-16 (the-as powercellalt sv-144) s1-0 'powercellalt (the-as pointer #x70004000)))
                 (run-now-in-process sv-144 powercellalt-init-by-other s4-3 s3-1 sv-160 s0-0)
                 (-> sv-144 ppointer))))
-          (let ((s1-1 (current-time))) (until (time-elapsed? s1-1 (seconds 0.1)) (suspend)))
+          (suspend-for (seconds 0.1))
           (when (handle->process arg1)
             (let ((s1-2 (handle->process arg1))
                   (s0-1 (+ s2-0 4)))
@@ -274,8 +279,8 @@
                   (t9-20 (the-as powercellalt sv-176) s1-2 'powercellalt (the-as pointer #x70004000)))
                 (run-now-in-process sv-176 powercellalt-init-by-other s4-3 s3-1 sv-192 s0-1)
                 (-> sv-176 ppointer))))
-          (let ((s1-3 (current-time))) (until (time-elapsed? s1-3 (seconds 0.1)) (suspend)))))
-      (let ((gp-1 (current-time))) (until (time-elapsed? gp-1 (seconds 2)) (suspend)))
+          (suspend-for (seconds 0.1))))
+      (suspend-for (seconds 2))
       (let ((v0-22 (entity-by-name "sage-finalboss-1"))
             (a1-26 (new 'stack-no-clear 'event-message-block)))
         (set! (-> a1-26 from) self)

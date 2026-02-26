@@ -5,6 +5,7 @@
 #include <iostream>
 #include <random>
 #include <thread>
+#include <list>
 
 #define MINIAUDIO_IMPLEMENTATION
 // NOTE - this is needed, because on macOS, there is a file called `MacTypes.h`
@@ -36,8 +37,8 @@ namespace MiniAudioLib {
 #include "common/log/log.h"
 #include "common/symbols.h"
 #include "common/util/FileUtil.h"
-#include "common/util/FontUtils.h"
 #include "common/util/Timer.h"
+#include "common/util/font/font_utils.h"
 #include "common/util/string_util.h"
 
 #include "game/external/discord.h"
@@ -75,7 +76,7 @@ u32 vblank_interrupt_handler = 0;
 Timer ee_clock_timer;
 
 MiniAudioLib::ma_engine maEngine;
-std::map<std::string, MiniAudioLib::ma_sound> maSoundMap;
+std::map<std::string, std::list<MiniAudioLib::ma_sound>> maSoundMap;
 MiniAudioLib::ma_sound* mainMusicSound;
 
 void kmachine_init_globals_common() {
@@ -148,30 +149,36 @@ std::mutex activeMusicsMutex;
 // Declare a mutex for synchronizing access to mainMusicInstance
 std::mutex mainMusicMutex;
 
-// Function to stop specific sound by filepath
+// Function to stop all instances of specific sound by filepath
 void stopMP3(u32 filePathu32) {
   std::string filePath = Ptr<String>(filePathu32).c()->data();
   std::cout << "Trying to stop file: " << filePath << std::endl;
 
+  std::lock_guard<std::mutex> lock(activeMusicsMutex);
   auto it = maSoundMap.find(filePath);
   if (it == maSoundMap.end()) {
     std::cerr << "Couldn't find sound to stop: " << filePath << std::endl;
   } else {
-    if (MiniAudioLib::ma_sound_stop(&it->second) != MiniAudioLib::MA_SUCCESS) {
-      std::cerr << "Failed to stop sound: " << filePath << std::endl;
+    // stop all instances of this sound
+    for (auto sound : it->second) {
+      if (MiniAudioLib::ma_sound_stop(&sound) != MiniAudioLib::MA_SUCCESS) {
+        std::cerr << "Failed to stop sound: " << filePath << std::endl;
+      }
+      // let the thread finish and handle ma_sound_uninit
     }
-    MiniAudioLib::ma_sound_uninit(&it->second);
-
-    std::lock_guard<std::mutex> lock(activeMusicsMutex);
-    maSoundMap.erase(filePath);
+    // clear list of sounds for this filepath
+    it->second.clear();
   }
 }
 
 // Function to stop all currently playing sounds.
 void stopAllSounds() {
   for (auto& pair : maSoundMap) {
-    MiniAudioLib::ma_sound_stop(&pair.second);
-    MiniAudioLib::ma_sound_uninit(&pair.second);
+    // stop all instances of this sound
+    for (auto sound : pair.second) {
+      MiniAudioLib::ma_sound_stop(&sound);
+    }
+    pair.second.clear();
   }
   maSoundMap.clear();
 }
@@ -185,17 +192,18 @@ std::vector<std::string> getPlayingFileNames() {
   return playingFileNames;
 }
 
-void playMP3_internal(u32 filePathu32, u32 volume, bool isMainMusic) {
-  std::thread thread([=]() {
-    std::string filePath = Ptr<String>(filePathu32).c()->data();
-    std::string fullFilePath = fs::path(file_util::get_jak_project_dir() / "custom_assets" /
-                                    game_version_names[g_game_version] / "audio" / filePath).string();
-
-    if (maSoundMap.contains(filePath)) {
-      std::cout << "File is already playing, stopping first: " << filePath << std::endl;
-      stopMP3(filePathu32);
-    }
+u64 playMP3_internal(u32 filePathu32, u32 volume, bool isMainMusic) {
+  std::string filePath = Ptr<String>(filePathu32).c()->data();
+  std::string fullFilePath = fs::path(file_util::get_jak_project_dir() / "custom_assets" /
+                                  game_version_names[g_game_version] / "audio" / filePath).string();
   
+  if (!file_util::file_exists(fullFilePath)) {
+    // file doesn't exist, let GOAL side know we didn't find it
+    return bool_to_symbol(false);
+  }
+
+  std::thread thread([=]() {
+
     std::cout << "Playing file: " << filePath << std::endl;
 
     MiniAudioLib::ma_result result;
@@ -221,11 +229,14 @@ void playMP3_internal(u32 filePathu32, u32 volume, bool isMainMusic) {
 
     if (!isMainMusic) {
       std::lock_guard<std::mutex> lock(activeMusicsMutex);
-      maSoundMap.insert(std::make_pair(filePath, sound));
+      if (maSoundMap.find(filePath) == maSoundMap.end()) {
+        maSoundMap.insert(std::make_pair(filePath, std::list<MiniAudioLib::ma_sound>()));
+      }
+      maSoundMap[filePath].push_back(sound);
     }
 
-    // loop until we're no longer main music, or we reach the end of non-looping sound
-    while (mainMusicSound == &sound || !MiniAudioLib::ma_sound_at_end(&sound)) {
+    // sleep/loop until we're no longer main music, or non-looping sound is stopped/ends
+    while (mainMusicSound == &sound || MiniAudioLib::ma_sound_is_playing(&sound)) {
       std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 
@@ -235,15 +246,19 @@ void playMP3_internal(u32 filePathu32, u32 volume, bool isMainMusic) {
 
     if (!isMainMusic) {
       std::lock_guard<std::mutex> lock(activeMusicsMutex);
-      maSoundMap.erase(filePath);
+      if (maSoundMap.find(filePath) != maSoundMap.end()) {
+        maSoundMap[filePath].remove_if(
+            [&](MiniAudioLib::ma_sound l_sound) { return &sound == &l_sound; });
+      }
     }
   });
 
   thread.detach();
+  return bool_to_symbol(true);
 }
 
-void playMP3(u32 filePathu32, u32 volume) {
-  playMP3_internal(filePathu32, volume, false);
+u64 playMP3(u32 filePathu32, u32 volume) {
+  return playMP3_internal(filePathu32, volume, false);
 }
 
 // Function to stop the Main Music.
@@ -252,7 +267,6 @@ void stopMainMusic() {
   if (mainMusicSound && MiniAudioLib::ma_sound_is_playing(mainMusicSound)) {
     std::cout << "Stopping Main Music..." << std::endl;
     MiniAudioLib::ma_sound_stop(mainMusicSound);
-    MiniAudioLib::ma_sound_uninit(mainMusicSound);
     mainMusicSound = NULL;
     std::cout << "Stopped Main Music " << std::endl;
   }
@@ -639,7 +653,7 @@ u64 pc_get_mips2c(u32 name) {
 
 u64 pc_get_display_id() {
   if (Display::GetMainDisplay()) {
-    return Display::GetMainDisplay()->get_display_manager()->get_active_display_id();
+    return Display::GetMainDisplay()->get_display_manager()->get_active_display_index();
   }
   return 0;
 }
@@ -685,19 +699,19 @@ u32 pc_get_display_mode() {
   }
 }
 
-void pc_set_display_mode(u32 symptr) {
+void pc_set_display_mode(u32 symptr, u64 window_width, u64 window_height) {
   if (!Display::GetMainDisplay()) {
     return;
   }
   if (symptr == g_pc_port_funcs.intern_from_c("windowed").offset || symptr == s7.offset) {
     Display::GetMainDisplay()->get_display_manager()->enqueue_set_window_display_mode(
-        game_settings::DisplaySettings::DisplayMode::Windowed);
+        game_settings::DisplaySettings::DisplayMode::Windowed, window_width, window_height);
   } else if (symptr == g_pc_port_funcs.intern_from_c("borderless").offset) {
     Display::GetMainDisplay()->get_display_manager()->enqueue_set_window_display_mode(
-        game_settings::DisplaySettings::DisplayMode::Borderless);
+        game_settings::DisplaySettings::DisplayMode::Borderless, window_width, window_height);
   } else if (symptr == g_pc_port_funcs.intern_from_c("fullscreen").offset) {
     Display::GetMainDisplay()->get_display_manager()->enqueue_set_window_display_mode(
-        game_settings::DisplaySettings::DisplayMode::Fullscreen);
+        game_settings::DisplaySettings::DisplayMode::Fullscreen, window_width, window_height);
   }
 }
 
@@ -775,16 +789,18 @@ void pc_set_window_size(u64 width, u64 height) {
   }
 }
 
-s64 pc_get_num_resolutions() {
+s64 pc_get_num_resolutions(u32 for_windowed) {
   if (Display::GetMainDisplay()) {
-    return Display::GetMainDisplay()->get_display_manager()->get_num_resolutions();
+    return Display::GetMainDisplay()->get_display_manager()->get_num_resolutions(
+        symbol_to_bool(for_windowed));
   }
   return 0;
 }
 
-void pc_get_resolution(u32 id, u32 w_ptr, u32 h_ptr) {
+void pc_get_resolution(u32 id, u32 for_windowed, u32 w_ptr, u32 h_ptr) {
   if (Display::GetMainDisplay()) {
-    auto res = Display::GetMainDisplay()->get_display_manager()->get_resolution(id);
+    auto res = Display::GetMainDisplay()->get_display_manager()->get_resolution(
+        id, symbol_to_bool(for_windowed));
     auto w = Ptr<s64>(w_ptr).c();
     if (w) {
       *w = res.width;
@@ -975,6 +991,112 @@ void pc_set_auto_hide_cursor(u32 val) {
   }
 }
 
+u64 pc_get_pressure_sensitivity_enabled() {
+  if (Display::GetMainDisplay()) {
+    return bool_to_symbol(
+        Display::GetMainDisplay()->get_input_manager()->is_pressure_sensitivity_enabled());
+  }
+  return bool_to_symbol(false);
+}
+
+void pc_set_pressure_sensitivity_enabled(u32 val) {
+  if (Display::GetMainDisplay()) {
+    Display::GetMainDisplay()->get_input_manager()->set_pressure_sensitivity_enabled(
+        symbol_to_bool(val));
+  }
+}
+
+void pc_set_axis_scale(u32 val) {
+  if (Display::GetMainDisplay()) {
+    // wow dangerous i guess
+    Display::GetMainDisplay()->get_input_manager()->set_axis_scale(*((float*)&val));
+  }
+}
+
+u32 pc_get_axis_scale() {
+  float out = 1.33f;
+  if (Display::GetMainDisplay()) {
+    out = Display::GetMainDisplay()->get_input_manager()->axis_scale();
+  }
+  // wow dangerous i guess
+  return *((u32*)&out);
+}
+
+u64 pc_current_controller_has_pressure_sensitivity() {
+  if (Display::GetMainDisplay()) {
+    return bool_to_symbol(
+        Display::GetMainDisplay()->get_input_manager()->controller_has_pressure_sensitivity_support(
+            0));
+  }
+  return bool_to_symbol(false);
+}
+
+u64 pc_current_controller_has_trigger_effect_support() {
+  if (Display::GetMainDisplay()) {
+    return bool_to_symbol(
+        Display::GetMainDisplay()->get_input_manager()->controller_has_trigger_effect_support(0));
+  }
+  return bool_to_symbol(false);
+}
+
+u64 pc_get_trigger_effects_enabled() {
+  if (Display::GetMainDisplay()) {
+    return bool_to_symbol(
+        Display::GetMainDisplay()->get_input_manager()->are_trigger_effects_enabled());
+  }
+  return bool_to_symbol(false);
+}
+
+void pc_set_trigger_effects_enabled(u32 val) {
+  if (Display::GetMainDisplay()) {
+    Display::GetMainDisplay()->get_input_manager()->enqueue_set_trigger_effects_enabled(
+        symbol_to_bool(val));
+  }
+}
+
+void pc_clear_trigger_effect(dualsense_effects::TriggerEffectOption option) {
+  if (Display::GetMainDisplay()) {
+    Display::GetMainDisplay()->get_input_manager()->enqueue_controller_clear_trigger_effect(0,
+                                                                                            option);
+  }
+}
+
+void pc_send_trigger_effect_feedback(dualsense_effects::TriggerEffectOption option,
+                                     u8 position,
+                                     u8 strength) {
+  if (Display::GetMainDisplay()) {
+    Display::GetMainDisplay()->get_input_manager()->enqueue_controller_send_trigger_effect_feedback(
+        0, option, position, strength);
+  }
+}
+
+void pc_send_trigger_effect_vibrate(dualsense_effects::TriggerEffectOption option,
+                                    u8 position,
+                                    u8 amplitude,
+                                    u8 frequency) {
+  if (Display::GetMainDisplay()) {
+    Display::GetMainDisplay()->get_input_manager()->enqueue_controller_send_trigger_effect_vibrate(
+        0, option, position, amplitude, frequency);
+  }
+}
+
+void pc_send_trigger_effect_weapon(dualsense_effects::TriggerEffectOption option,
+                                   u8 start_position,
+                                   u8 end_position,
+                                   u8 strength) {
+  if (Display::GetMainDisplay()) {
+    Display::GetMainDisplay()->get_input_manager()->enqueue_controller_send_trigger_effect_weapon(
+        0, option, start_position, end_position, strength);
+  }
+}
+
+void pc_send_trigger_rumble(u16 left_rumble, u16 right_rumble, u32 duration_ms) {
+  if (Display::GetMainDisplay()) {
+    Display::GetMainDisplay()->get_input_manager()->enqueue_controller_send_trigger_rumble(
+        0, left_rumble, right_rumble, duration_ms);
+  }
+}
+
 void pc_set_vsync(u32 sym_val) {
   Gfx::g_global_settings.vsync = symbol_to_bool(sym_val);
 }
@@ -995,6 +1117,11 @@ void pc_set_game_resolution(int w, int h) {
 void pc_set_letterbox(int w, int h) {
   Gfx::g_global_settings.lbox_w = w;
   Gfx::g_global_settings.lbox_h = h;
+}
+
+void pc_set_brightness_contrast(s32 color, s32 alpha) {
+  Gfx::g_global_settings.brightness_contrast_color = color;
+  Gfx::g_global_settings.brightness_contrast_alpha = alpha;
 }
 
 void pc_renderer_tree_set_lod(Gfx::RendererTreeType tree, int lod) {
@@ -1091,6 +1218,15 @@ void pc_register_screen_shot_settings(u32 ptr) {
   register_screen_shot_settings(Ptr<ScreenShotSettings>(ptr).c());
 }
 
+void pc_encode_utf8_string(u32 src_str_ptr, u32 str_dest_ptr) {
+  auto str = std::string(Ptr<String>(src_str_ptr).c()->data());
+  std::string version = version_to_game_name(g_game_version);
+  const std::string font_bank_name = version == "jak1" ? "jak1-v2" : version;
+  std::string converted =
+      get_font_bank(get_text_version_from_name(font_bank_name))->convert_utf8_to_game(str);
+  strcpy(Ptr<String>(str_dest_ptr).c()->data(), converted.c_str());
+}
+
 /// Initializes all functions that are common across all game versions
 /// These functions have the same implementation and do not use any game specific functions (other
 /// than the one to create a function in the first place)
@@ -1157,12 +1293,30 @@ void init_common_pc_port_functions(
   make_func_symbol_func("pc-stop-waiting-for-bind!", (void*)pc_stop_waiting_for_bind);
   make_func_symbol_func("pc-reset-bindings-to-defaults!", (void*)pc_reset_bindings_to_defaults);
   make_func_symbol_func("pc-set-auto-hide-cursor!", (void*)pc_set_auto_hide_cursor);
+  make_func_symbol_func("pc-get-pressure-sensitivity-enabled?",
+                        (void*)pc_get_pressure_sensitivity_enabled);
+  make_func_symbol_func("pc-set-pressure-sensitivity-enabled!",
+                        (void*)pc_set_pressure_sensitivity_enabled);
+  make_func_symbol_func("pc-set-axis-scale!", (void*)pc_set_axis_scale);
+  make_func_symbol_func("pc-get-axis-scale", (void*)pc_get_axis_scale);
+  make_func_symbol_func("pc-current-controller-has-pressure-sensitivity?",
+                        (void*)pc_current_controller_has_pressure_sensitivity);
+  make_func_symbol_func("pc-current-controller-has-trigger-effect-support?",
+                        (void*)pc_current_controller_has_trigger_effect_support);
+  make_func_symbol_func("pc-get-trigger-effects-enabled?", (void*)pc_get_trigger_effects_enabled);
+  make_func_symbol_func("pc-set-trigger-effects-enabled!", (void*)pc_set_trigger_effects_enabled);
+  make_func_symbol_func("pc-clear-trigger-effect!", (void*)pc_clear_trigger_effect);
+  make_func_symbol_func("pc-send-trigger-effect-feedback!", (void*)pc_send_trigger_effect_feedback);
+  make_func_symbol_func("pc-send-trigger-effect-vibrate!", (void*)pc_send_trigger_effect_vibrate);
+  make_func_symbol_func("pc-send-trigger-effect-weapon!", (void*)pc_send_trigger_effect_weapon);
+  make_func_symbol_func("pc-send-trigger-rumble!", (void*)pc_send_trigger_rumble);
 
   // graphics things
   make_func_symbol_func("pc-set-vsync", (void*)pc_set_vsync);
   make_func_symbol_func("pc-set-msaa", (void*)pc_set_msaa);
   make_func_symbol_func("pc-set-frame-rate", (void*)pc_set_frame_rate);
   make_func_symbol_func("pc-set-game-resolution", (void*)pc_set_game_resolution);
+  make_func_symbol_func("pc-set-brightness-contrast", (void*)pc_set_brightness_contrast);
   make_func_symbol_func("pc-set-letterbox", (void*)pc_set_letterbox);
   make_func_symbol_func("pc-renderer-tree-set-lod", (void*)pc_renderer_tree_set_lod);
   make_func_symbol_func("pc-set-collision-mode", (void*)Gfx::CollisionRendererSetMode);
@@ -1186,7 +1340,7 @@ void init_common_pc_port_functions(
   // Play sound file
   make_func_symbol_func("play-sound-file", (void*)playMP3);
 
-  // Stop sound file
+  // Stop sound file (all instances)
   make_func_symbol_func("stop-sound-file", (void*)stopMP3);
 
   // Stop all sounds
@@ -1208,6 +1362,9 @@ void init_common_pc_port_functions(
 
   // RNG
   make_func_symbol_func("pc-rand", (void*)pc_rand);
+
+  // text
+  make_func_symbol_func("pc-encode-utf8-string", (void*)pc_encode_utf8_string);
 
   // debugging tools
   make_func_symbol_func("pc-filter-debug-string?", (void*)pc_filter_debug_string);

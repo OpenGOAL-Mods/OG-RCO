@@ -66,15 +66,9 @@
             )
           )
       (set! (-> s5-1 flags) (font-flags shadow kerning large))
-      (let ((v1-4 s5-1))
-        (set! (-> v1-4 width) (the float 440))
-        )
-      (let ((v1-5 s5-1))
-        (set! (-> v1-5 height) (the float 80))
-        )
-      (let ((v1-6 s5-1))
-        (set! (-> v1-6 scale) 0.75)
-        )
+      (set-width! s5-1 440)
+      (set-height! s5-1 80)
+      (set-scale! s5-1 0.75)
       (let ((s4-0 print-game-text))
         (format (clear *temp-string*) (lookup-text! *common-text* arg0 #f))
         (s4-0 *temp-string* s5-1 #f 44 (bucket-id progress))
@@ -339,10 +333,7 @@
       (suspend)
       )
     (send-event (handle->process (-> self voicebox)) 'speak-effect #f)
-    (let ((gp-0 (current-time)))
-      (until (time-elapsed? gp-0 (seconds 1))
-        (suspend)
-        )
+    (suspend-for (seconds 1)
       )
     (send-event (handle->process (-> self voicebox)) 'speak-effect #t)
     (set! (-> self last-sound-id)
@@ -379,10 +370,7 @@
       (suspend)
       )
     (send-event (handle->process (-> self voicebox)) 'speak-effect #f)
-    (let ((gp-0 (current-time)))
-      (until (time-elapsed? gp-0 (seconds 1))
-        (suspend)
-        )
+    (suspend-for (seconds 1)
       )
     (send-event (handle->process (-> self voicebox)) 'speak-effect #t)
     (set! (-> self last-sound-id)
@@ -452,10 +440,7 @@
     (while (nonzero? (get-status *gui-control* (-> self last-sound-id)))
       (suspend)
       )
-    (let ((gp-0 (current-time)))
-      (until (time-elapsed? gp-0 (seconds 1))
-        (suspend)
-        )
+    (suspend-for (seconds 1)
       )
     (set! (-> self last-sound-id)
           (add-process *gui-control* self (gui-channel sig) (gui-action play) "kei013" -99.0 0)
@@ -517,10 +502,7 @@
       (suspend)
       )
     (send-event (handle->process (-> self voicebox)) 'speak-effect #f)
-    (let ((gp-0 (current-time)))
-      (until (time-elapsed? gp-0 (seconds 1))
-        (suspend)
-        )
+    (suspend-for (seconds 1)
       )
     (send-event (handle->process (-> self voicebox)) 'speak-effect #t)
     (set! (-> self last-sound-id)
@@ -557,10 +539,7 @@
       (suspend)
       )
     (send-event (handle->process (-> self voicebox)) 'speak-effect #f)
-    (let ((gp-0 (current-time)))
-      (until (time-elapsed? gp-0 (seconds 1))
-        (suspend)
-        )
+    (suspend-for (seconds 1)
       )
     (send-event (handle->process (-> self voicebox)) 'speak-effect #t)
     (set! (-> self last-sound-id)
@@ -594,10 +573,7 @@
       (suspend)
       )
     (send-event (handle->process (-> self voicebox)) 'speak-effect #f)
-    (let ((gp-0 (current-time)))
-      (until (time-elapsed? gp-0 (seconds 1))
-        (suspend)
-        )
+    (suspend-for (seconds 1)
       )
     (send-event (handle->process (-> self voicebox)) 'speak-effect #t)
     (set! (-> self last-sound-id)
@@ -1081,11 +1057,7 @@
                     )
                   )
                 )
-              (let ((s5-2 (current-time)))
-                (until (time-elapsed? s5-2 (seconds 1))
-                  (suspend)
-                  )
-                )
+              (suspend-for (seconds 1))
               (send-event (handle->process gp-3) 'die)
               )
             )
@@ -1289,11 +1261,7 @@
                   )
                 )
               )
-            (let ((s5-2 (current-time)))
-              (until (time-elapsed? s5-2 (seconds 1))
-                (suspend)
-                )
-              )
+            (suspend-for (seconds 1))
             (send-event (handle->process gp-2) 'die)
             )
           )
@@ -1310,6 +1278,7 @@
   )
 
 (defmethod deactivate ((this hoverboard-training-manager))
+  "Make a process dead, clean it up, remove it from the active pool, and return to dead pool."
   (send-event *traffic-manager* 'restore-default-settings)
   (call-parent-method this)
   (none)
@@ -1318,11 +1287,11 @@
 ;; WARN: Return type mismatch object vs none.
 (defmethod init-from-entity! ((this hoverboard-training-manager) (arg0 entity-actor))
   "Typically the method that does the initial setup on the process, potentially using the [[entity-actor]] provided as part of that.
-This commonly includes things such as:
-- stack size
-- collision information
-- loading the skeleton group / bones
-- sounds"
+   This commonly includes things such as:
+   - stack size
+   - collision information
+   - loading the skeleton group / bones
+   - sounds"
   ;; og:preserve-this added
   (stack-size-set! (-> this main-thread) 1024)
   (local-vars (sv-16 res-tag))
@@ -1490,11 +1459,11 @@ This commonly includes things such as:
 ;; WARN: Return type mismatch object vs none.
 (defmethod init-from-entity! ((this skate-training-ramp) (arg0 entity-actor))
   "Typically the method that does the initial setup on the process, potentially using the [[entity-actor]] provided as part of that.
-This commonly includes things such as:
-- stack size
-- collision information
-- loading the skeleton group / bones
-- sounds"
+   This commonly includes things such as:
+   - stack size
+   - collision information
+   - loading the skeleton group / bones
+   - sounds"
   (skate-training-ramp-method-28 this)
   (process-drawable-from-entity! this arg0)
   (logclear! (-> this mask) (process-mask actor-pause))
@@ -1611,11 +1580,11 @@ This commonly includes things such as:
 ;; WARN: Return type mismatch object vs none.
 (defmethod init-from-entity! ((this skate-gate) (arg0 entity-actor))
   "Typically the method that does the initial setup on the process, potentially using the [[entity-actor]] provided as part of that.
-This commonly includes things such as:
-- stack size
-- collision information
-- loading the skeleton group / bones
-- sounds"
+   This commonly includes things such as:
+   - stack size
+   - collision information
+   - loading the skeleton group / bones
+   - sounds"
   (skate-gate-method-29 this)
   (process-drawable-from-entity! this arg0)
   (logclear! (-> this mask) (process-mask actor-pause))
@@ -1713,42 +1682,8 @@ This commonly includes things such as:
   :virtual #t
   :code (behavior ()
     (sound-play "dig-air-lifter")
-    (let ((s5-1 (vector<-cspace! (new 'stack-no-clear 'vector) (joint-node skatea-jump-pad-lod0-jg main)))
-          (gp-1 (get-process *default-dead-pool* part-tracker #x4000))
-          )
-      (when gp-1
-        (let ((t9-4 (method-of-type part-tracker activate)))
-          (t9-4
-            (the-as part-tracker gp-1)
-            *entity-pool*
-            (symbol->string (-> part-tracker symbol))
-            (the-as pointer #x70004000)
-            )
-          )
-        (let ((t9-5 run-function-in-process)
-              (a0-5 gp-1)
-              (a1-4 part-tracker-init)
-              (a2-5 (-> *part-group-id-table* 12))
-              (a3-2 0)
-              (t0-1 #f)
-              (t1-1 #f)
-              (t2-1 #f)
-              (t3-0 *launch-matrix*)
-              )
-          (set! (-> t3-0 trans quad) (-> s5-1 quad))
-          ((the-as (function object object object object object object object object none) t9-5)
-           a0-5
-           a1-4
-           a2-5
-           a3-2
-           t0-1
-           t1-1
-           t2-1
-           t3-0
-           )
-          )
-        (-> gp-1 ppointer)
-        )
+    (let ((s5-1 (vector<-cspace! (new 'stack-no-clear 'vector) (joint-node skatea-jump-pad-lod0-jg main))))
+      (part-tracker-spawn :to *entity-pool* :group group-smack-surface :mat-joint s5-1)
       )
     (let ((t9-6 (-> (method-of-type bouncer fire) code)))
       (if t9-6
@@ -1807,9 +1742,9 @@ This commonly includes things such as:
             )
           (.lvf vf4 (&-> v1-6 quad))
           )
-        (.add.x.vf vf6 vf0 vf0 :mask #b1000)
-        (.mul.x.vf acc vf5 vf7 :mask #b111)
-        (.add.mul.w.vf vf6 vf4 vf0 acc :mask #b111)
+        (.add.x.vf.w vf6 vf0 vf0)
+        (.mul.x.vf.xyz acc vf5 vf7)
+        (.add.mul.w.vf.xyz vf6 vf4 vf0 acc)
         (.svf (&-> a1-0 quad) vf6)
         (t9-1 a0-1 a1-0)
         )
@@ -1853,11 +1788,11 @@ This commonly includes things such as:
 ;; WARN: Return type mismatch object vs none.
 (defmethod init-from-entity! ((this skatea-floating-ring) (arg0 entity-actor))
   "Typically the method that does the initial setup on the process, potentially using the [[entity-actor]] provided as part of that.
-This commonly includes things such as:
-- stack size
-- collision information
-- loading the skeleton group / bones
-- sounds"
+   This commonly includes things such as:
+   - stack size
+   - collision information
+   - loading the skeleton group / bones
+   - sounds"
   (skatea-floating-ring-method-28 this)
   (process-drawable-from-entity! this arg0)
   (initialize-skeleton
@@ -1871,7 +1806,7 @@ This commonly includes things such as:
   (logior! (-> this mask) (process-mask crate))
   (set! (-> this pos-y) (-> this root trans y))
   (set! (-> this offset) (rand-vu))
-  (set! (-> this part) (create-launch-control (-> *part-group-id-table* 539) this))
+  (set! (-> this part) (create-launch-control group-skatea-flaming-ring this))
   (set! (-> this sound)
         (new 'process 'ambient-sound (static-sound-spec "fire-ring" :fo-min 10 :fo-max 30) (-> this root trans))
         )

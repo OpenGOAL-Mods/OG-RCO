@@ -48,18 +48,12 @@
   :virtual #t
   :event (-> (method-of-type fort-elec-switch idle) event)
   :code (behavior ()
-    (let ((gp-0 (current-time)))
-      (until (time-elapsed? gp-0 (seconds 16))
-        (suspend)
-        )
+    (suspend-for (seconds 16)
       )
     (until (logtest? (-> self draw status) (draw-control-status on-screen))
       (suspend)
       )
-    (let ((gp-1 (current-time)))
-      (until (time-elapsed? gp-1 (seconds 0.4))
-        (suspend)
-        )
+    (suspend-for (seconds 0.4)
       )
     (talker-spawn-func (-> *talker-speech* 86) *entity-pool* (target-pos 0) (the-as region #f))
     (sleep-code)
@@ -100,47 +94,10 @@
     (let ((gp-0 (new 'stack-no-clear 'vector)))
       (set! (-> gp-0 quad) (-> self root trans quad))
       (+! (-> gp-0 y) 8192.0)
-      (let ((s5-0 (get-process *default-dead-pool* part-tracker #x4000)))
-        (when s5-0
-          (let ((t9-1 (method-of-type part-tracker activate)))
-            (t9-1
-              (the-as part-tracker s5-0)
-              *entity-pool*
-              (symbol->string (-> part-tracker symbol))
-              (the-as pointer #x70004000)
-              )
-            )
-          (let ((t9-2 run-function-in-process)
-                (a0-6 s5-0)
-                (a1-2 part-tracker-init)
-                (a2-4 (-> *part-group-id-table* 125))
-                (a3-1 0)
-                (t0-0 #f)
-                (t1-0 #f)
-                (t2-0 #f)
-                (t3-0 *launch-matrix*)
-                )
-            (set! (-> t3-0 trans quad) (-> gp-0 quad))
-            ((the-as (function object object object object object object object object none) t9-2)
-             a0-6
-             a1-2
-             a2-4
-             a3-1
-             t0-0
-             t1-0
-             t2-0
-             t3-0
-             )
-            )
-          (-> s5-0 ppointer)
-          )
-        )
+      (part-tracker-spawn :to *entity-pool* :group group-crate-steel-explode :mat-joint gp-0)
       )
     (sound-play "elec-switch")
-    (let ((gp-2 (current-time)))
-      (until (time-elapsed? gp-2 (seconds 0.5))
-        (suspend)
-        )
+    (suspend-for (seconds 0.5)
       )
     (let ((v1-22 #t))
       (when (-> self switch-group)
@@ -173,10 +130,7 @@
               )
             )
           )
-        (let ((gp-3 (current-time)))
-          (until (time-elapsed? gp-3 (seconds 0.75))
-            (suspend)
-            )
+        (suspend-for (seconds 0.75)
           )
         (let ((a1-14 (new 'stack-no-clear 'event-message-block)))
           (set! (-> a1-14 from) (process->ppointer self))
@@ -193,10 +147,7 @@
               )
             )
           )
-        (let ((gp-4 (current-time)))
-          (until (time-elapsed? gp-4 (seconds 1.5))
-            (suspend)
-            )
+        (suspend-for (seconds 1.5)
           )
         (remove-setting! 'entity-name)
         (remove-setting! 'process-mask)
@@ -223,21 +174,21 @@
   )
 
 ;; WARN: Return type mismatch process-drawable vs fort-elec-switch.
-(defmethod relocate ((this fort-elec-switch) (arg0 int))
+(defmethod relocate ((this fort-elec-switch) (offset int))
   (if (nonzero? (-> this l-bolt))
-      (&+! (-> this l-bolt) arg0)
+      (&+! (-> this l-bolt) offset)
       )
-  (the-as fort-elec-switch ((method-of-type process-drawable relocate) this arg0))
+  (the-as fort-elec-switch ((method-of-type process-drawable relocate) this offset))
   )
 
 ;; WARN: Return type mismatch object vs none.
 (defmethod init-from-entity! ((this fort-elec-switch) (arg0 entity-actor))
   "Typically the method that does the initial setup on the process, potentially using the [[entity-actor]] provided as part of that.
-This commonly includes things such as:
-- stack size
-- collision information
-- loading the skeleton group / bones
-- sounds"
+   This commonly includes things such as:
+   - stack size
+   - collision information
+   - loading the skeleton group / bones
+   - sounds"
   (local-vars (sv-16 res-tag))
   ;; og:preserve-this added
   (stack-size-set! (-> this top-thread) 512)
@@ -447,11 +398,11 @@ This commonly includes things such as:
 ;; WARN: Return type mismatch object vs none.
 (defmethod init-from-entity! ((this fort-fence) (arg0 entity-actor))
   "Typically the method that does the initial setup on the process, potentially using the [[entity-actor]] provided as part of that.
-This commonly includes things such as:
-- stack size
-- collision information
-- loading the skeleton group / bones
-- sounds"
+   This commonly includes things such as:
+   - stack size
+   - collision information
+   - loading the skeleton group / bones
+   - sounds"
   (stack-size-set! (-> this main-thread) 512)
   (fort-fence-method-23 this)
   (process-drawable-from-entity! this arg0)

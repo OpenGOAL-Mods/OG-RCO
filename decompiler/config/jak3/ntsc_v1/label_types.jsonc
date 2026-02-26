@@ -1046,7 +1046,7 @@
   "desertf-obs": [["L99", "(inline-array vector)", 2]],
   "desert-dust-storm": [["L89", "vector"]],
   "artifact-race": [
-    ["L162", "(inline-array talker-speech-class)", 16],
+    ["L162", "(inline-array talker-speech-class)", 32],
     ["L160", "vector"],
     ["L159", "vector"],
     ["L158", "vector"],
@@ -2464,5 +2464,6 @@
   "texture-anim": [
     ["L198", "(pointer uint8)", 16],
     ["L197", "(pointer uint16)", 48]
-  ]
+  ],
+  "game-task": [["L18", "(array game-task-node-command)"]]
 }

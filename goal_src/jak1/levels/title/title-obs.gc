@@ -24,9 +24,10 @@
    hidden
    ndi))
 
-(defmethod relocate ((this logo) (arg0 int))
-  (if (nonzero? (-> this main-joint)) (&+! (-> this main-joint) arg0))
-  (the-as logo ((method-of-type process-drawable relocate) this arg0)))
+
+(defmethod relocate ((this logo) (offset int))
+  (if (nonzero? (-> this main-joint)) (&+! (-> this main-joint) offset))
+  (the-as logo ((method-of-type process-drawable relocate) this offset)))
 
 (deftype logo-slave (process-drawable)
   ((parent-process (pointer logo) :overlay-at parent)
@@ -34,9 +35,10 @@
   (:state-methods
    idle))
 
-(defmethod relocate ((this logo-slave) (arg0 int))
-  (if (nonzero? (-> this main-joint)) (&+! (-> this main-joint) arg0))
-  (the-as logo-slave ((method-of-type process-drawable relocate) this arg0)))
+
+(defmethod relocate ((this logo-slave) (offset int))
+  (if (nonzero? (-> this main-joint)) (&+! (-> this main-joint) offset))
+  (the-as logo-slave ((method-of-type process-drawable relocate) this offset)))
 
 (defskelgroup *logo-sg*
   logo
@@ -324,7 +326,7 @@
       (let ((gp-0 *master-mode*)) (set! *master-mode* 'game) (clear-rec *art-control*) (set! *master-mode* gp-0))
       (loop
         (when (and (none-reserved? *art-control*) (not (paused?)))
-          (let ((gp-1 (current-time))) (until (time-elapsed? gp-1 (seconds 0.1)) (set! *camera-look-through-other* 2) (suspend)))
+          (suspend-for (seconds 0.1) (set! *camera-look-through-other* 2))
           (go-virtual idle))
         (set! *camera-look-through-other* 2)
         (suspend))))
@@ -433,33 +435,62 @@
      (set! (-> self main-joint) (new 'process 'joint-mod (joint-mod-handler-mode joint-set*) self 3))
      (set! (-> self main-joint max-dist) (the-as meters #t))
      (set! (-> self next-anim)
-           (new 'static
-                'spool-anim
-                :name "logo-intro"
-                :index 5
-                :parts 3
-                :command-list
-                '((0 want-levels title village1)
-                 (5 display-level village1 special)
-                 (5 want-vis vi1)
-                 (5 want-force-inside village1 #t)
-                 (115 display-level village1 display-self)
-                 (115 save)
-                 (115 kill "sage-23")
-                 (115 kill "assistant-11")
-                 (115 kill "explorer-4")
-                 (115 kill "farmer-3")
-                 (115 kill "oracle-1")
-                 (115 kill "warp-gate-switch-3")
-                 (115 kill "sharkey-12")
-                 (115 kill "fishermans-boat-2")
-                 (115 kill "evilplant-2")
-                 (115 kill "revcycle-8")
-                 (115 kill "revcycleprop-2")
-                 (115 kill "water-vol-8")
-                 (115 kill "water-vol-9")
-                 (115 kill "water-vol-10")
-                 (115 kill "reflector-middle-2"))))
+           (if (and PC_PORT (not (-> *pc-settings* use-vis?)))
+             ;; og:preserve-this added for pc port, custom spool with vil1 display delayed for high aspect
+             (new 'static
+                  'spool-anim
+                  :name "logo-intro"
+                  :index 5
+                  :parts 3
+                  :command-list
+                  '((0 want-levels title village1)
+                   (0 display-level village1 #f)
+                   (5 want-vis vi1)
+                   (5 want-force-inside village1 #t)
+                   (120 display-level village1 display-self)
+                   (115 save)
+                   (115 kill "sage-23")
+                   (115 kill "assistant-11")
+                   (115 kill "explorer-4")
+                   (115 kill "farmer-3")
+                   (115 kill "oracle-1")
+                   (115 kill "warp-gate-switch-3")
+                   (115 kill "sharkey-12")
+                   (115 kill "fishermans-boat-2")
+                   (115 kill "evilplant-2")
+                   (115 kill "revcycle-8")
+                   (115 kill "revcycleprop-2")
+                   (115 kill "water-vol-8")
+                   (115 kill "water-vol-9")
+                   (115 kill "water-vol-10")
+                   (115 kill "reflector-middle-2")))
+             (new 'static
+                  'spool-anim
+                  :name "logo-intro"
+                  :index 5
+                  :parts 3
+                  :command-list
+                  '((0 want-levels title village1)
+                   (5 display-level village1 special)
+                   (5 want-vis vi1)
+                   (5 want-force-inside village1 #t)
+                   (115 display-level village1 display-self)
+                   (115 save)
+                   (115 kill "sage-23")
+                   (115 kill "assistant-11")
+                   (115 kill "explorer-4")
+                   (115 kill "farmer-3")
+                   (115 kill "oracle-1")
+                   (115 kill "warp-gate-switch-3")
+                   (115 kill "sharkey-12")
+                   (115 kill "fishermans-boat-2")
+                   (115 kill "evilplant-2")
+                   (115 kill "revcycle-8")
+                   (115 kill "revcycleprop-2")
+                   (115 kill "water-vol-8")
+                   (115 kill "water-vol-9")
+                   (115 kill "water-vol-10")
+                   (115 kill "reflector-middle-2")))))
      (set! (-> self draw origin-joint-index) (the-as uint 3)))
     (('ndi)
      (set! (-> *time-of-day-context* title-light-group dir1 levels x) 1.0)
@@ -534,7 +565,7 @@
            (while (!= (file-status *art-control* "ndi-intro" 0) 'active)
              (set-blackout-frames (seconds 0.05))
              (suspend))
-           (let ((s5-1 (current-time))) (until (time-elapsed? s5-1 (seconds 0.25)) (set-blackout-frames (seconds 0.05)) (suspend)))))
+           (suspend-for (seconds 0.25) (set-blackout-frames (seconds 0.05)))))
         (label cfg-8)
         (let ((s5-2 (new 'stack-no-clear 'mc-slot-info)))
           (mc-get-slot-info 0 s5-2)
@@ -560,7 +591,7 @@
             (apply-settings *setting-control*)
             (while *progress-process*
               (suspend))
-            (let ((gp-2 (current-time))) (until (time-elapsed? gp-2 (seconds 0.01)) (suspend)))
+            (suspend-for (seconds 0.01))
             (goto cfg-41))))
       (label cfg-41)
       (let ((gp-3 (entity-by-name "logo-1")))
