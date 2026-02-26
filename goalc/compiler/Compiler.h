@@ -21,7 +21,7 @@
 #include "goalc/make/MakeSystem.h"
 
 #include "fmt/color.h"
-#include "fmt/core.h"
+#include "fmt/format.h"
 
 enum MathMode { MATH_INT, MATH_BINT, MATH_FLOAT, MATH_INVALID };
 
@@ -730,6 +730,7 @@ class Compiler {
   Val* compile_size_of(const goos::Object& form, const goos::Object& rest, Env* env);
   ConstPropResult const_prop_size_of(const goos::Object& form, const goos::Object& rest, Env* env);
   Val* compile_psize_of(const goos::Object& form, const goos::Object& rest, Env* env);
+  Val* compile_offset_of(const goos::Object& form, const goos::Object& rest, Env* env);
   Val* compile_current_method_id(const goos::Object& form, const goos::Object& rest, Env* env);
   Val* compile_current_method_type(const goos::Object& form, const goos::Object& rest, Env* env);
   Val* compile_cast_to_method_type(const goos::Object& form, const goos::Object& rest, Env* env);
@@ -743,8 +744,9 @@ class Compiler {
   Val* compile_gc_text(const goos::Object& form, const goos::Object& rest, Env* env);
 };
 
-extern const std::unordered_map<
-    std::string,
-    std::pair<std::string,
-              Val* (Compiler::*)(const goos::Object& form, const goos::Object& rest, Env* env)>>
-    g_goal_forms;
+struct GoalCompilerForm {
+  std::string docstring = "";
+  Val* (Compiler::*form_function)(const goos::Object& form, const goos::Object& rest, Env* env);
+};
+
+extern const std::unordered_map<std::string, GoalCompilerForm> g_goal_forms;

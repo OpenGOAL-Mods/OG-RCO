@@ -109,7 +109,7 @@ void split_along_dim(std::vector<jak1::CollideFace>& faces,
             [=](const jak1::CollideFace& a, const jak1::CollideFace& b) {
               return a.bsphere[dim] < b.bsphere[dim];
             });
-  lg::print("splitting with size: {}\n", faces.size());
+  // lg::print("splitting with size: {}\n", faces.size());
   size_t split_idx = faces.size() / 2;
   out0->insert(out0->end(), faces.begin(), faces.begin() + split_idx);
   out1->insert(out1->end(), faces.begin() + split_idx, faces.end());
@@ -219,9 +219,10 @@ void split_recursive(CNode& to_split) {
     for (auto& c : temp_children) {
       if (!c.faces.empty()) {
         to_split.child_nodes.emplace_back();
-        to_split.child_nodes.emplace_back();
-        split_node_once(c, &to_split.child_nodes[to_split.child_nodes.size() - 1],
-                        &to_split.child_nodes[to_split.child_nodes.size() - 2]);
+        auto& wrapper = to_split.child_nodes.back();
+        wrapper.child_nodes.clear();
+        wrapper.child_nodes.push_back(std::move(c));
+        compute_my_bsphere_ritters(wrapper);
       } else {
         to_split.child_nodes.push_back(std::move(c));
       }

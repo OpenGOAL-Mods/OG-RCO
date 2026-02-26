@@ -22,9 +22,6 @@
 
 (define-extern runs-on-jak-death (function symbol none))
 
-;;Forward declaration Variable for mod base settings
-(define-extern startingDebugContinuePoint (string))
-
 ;; DECOMP BEGINS
 
 ;;;;;;;;;;;;;;;;;;
@@ -187,7 +184,6 @@
                     (cond
                       (continue-point-override (empty) continue-point-override)
                       ((!= *kernel-boot-message* 'play) "demo-start")
-                      ((and *debug-segment* (not (string= startingDebugContinuePoint "village1-hut"))) startingDebugContinuePoint) ;; mod-base-change
                       (*debug-segment* "village1-hut")
                       (else "title-start")))
      (set! (-> this auto-save-count) 0)
@@ -217,10 +213,7 @@
        (set! (-> this enter-level-time v1-53) 0)
        (set! (-> this in-level-time v1-53) 0)
        (set! (-> this level-opened v1-53) (the-as uint 0))
-       (nop!)
-       )
-     )
-    )
+       (nop!))))
   (case cause
     (('game 'try)
      ;; full restart, or ran out of lives
@@ -247,7 +240,6 @@
        (set! (-> *setting-control* default border-mode) #f)
        (set! *spawn-actors* #f)
        (set-blackout-frames (seconds 0.1))
-
        ;; send target a 'reset message.
        (send-event *target* 'reset)
        ;; start a temporary process to restart things
@@ -444,7 +436,7 @@
         ;; subtract lives.
         (if (= (-> this health) 0.0)
           (adjust (-> (the-as target (-> this process)) game) 'life (- (-> *GAME-bank* life-single-inc)) source-handle))))
-     ;; some sort of hack for eco vents.
+     ;; green eco vents power-up when racing.
      (b! (and (logtest? (-> (the-as collide-shape (-> this process root)) root-prim prim-core action) (collide-action racer))
               (type-type? (-> (handle->process source-handle) type) vent))
          cfg-80
@@ -478,6 +470,14 @@
      (let ((s4-2 (the int amount)))
        (when (not (or (task-complete? (-> (the-as target (-> this process)) game) (the-as game-task s4-2))
                       (>= (the-as uint 1) (the-as uint s4-2))))
+        ;; RCO - moved this from red hut warp gate button to end of MP cell to prevent snowy gondola softlock
+        (when (= s4-2 (game-task ogre-end))
+          (let ((s4-3 (get-task-control (game-task village3-button))))
+            (when (zero? (get-reminder s4-3 2))
+              (let ((s3-1 (max 1 (+ 1 (the int (-> *game-info* fuel)))))) ;; add one here because we're just about to pickup a cell, but it hasn't registered yet
+                (format #t "VILLAGE3 button saved ~D tasks~%" s3-1)
+                (save-reminder s4-3 s3-1 2))))
+                )
          ;; og:preserve-this
          (#when PC_PORT
            ;; make sure any speedrun display is hidden

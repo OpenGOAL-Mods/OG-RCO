@@ -1515,10 +1515,10 @@ FormElement* rewrite_joint_macro(LetElement* in, const Env& env, FormPool& pool)
       args);
 }
 
-FormElement* rewrite_part_tracker_new(const std::string& type,
-                                      LetElement* in,
-                                      const Env& env,
-                                      FormPool& pool) {
+FormElement* rewrite_part_tracker_new_jak3(const std::string& type,
+                                           LetElement* in,
+                                           const Env& env,
+                                           FormPool& pool) {
   // (let ((s4-11 (get-process *default-dead-pool* part-tracker #x4000 0)))
   //   (when s4-11
   //     (let ((t9-26 (method-of-type part-tracker activate)))
@@ -1673,6 +1673,232 @@ FormElement* rewrite_part_tracker_new(const std::string& type,
       ->try_as_single_element();
 }
 
+FormElement* rewrite_part_tracker_new_jak2(const std::string& type,
+                                           LetElement* in,
+                                           const Env& env,
+                                           FormPool& pool) {
+  // (let ((s5-8 (get-process *default-dead-pool* part-tracker #x4000)))
+  //   (when s5-8
+  //     (let ((t9-17 (method-of-type part-tracker activate)))
+  //       (t9-17 (the-as part-tracker s5-8) self (symbol->string (-> part-tracker symbol)) (the-as
+  //       pointer #x70004000))
+  //       )
+  //     (let ((t9-18 run-function-in-process)
+  //           (a0-34 s5-8)
+  //           (a1-21 part-tracker-init)
+  //           (a2-11 (-> *part-group-id-table* 126))
+  //           (a3-9 0)
+  //           (t0-6 #f)
+  //           (t1-4 #f)
+  //           (t2-4 #f)
+  //           (t3-0 *launch-matrix*)
+  //           )
+  //       (set! (-> t3-0 trans quad) (-> self root trans quad))
+  //       ((the-as (function object object object object object object object object none) t9-18)
+  //        a0-34
+  //        a1-21
+  //        a2-11
+  //        a3-9
+  //        t0-6
+  //        t1-4
+  //        t2-4
+  //        t3-0
+  //        )
+  //       )
+  //     (-> s5-8 ppointer)
+  //     )
+  //   )
+  auto cond = dynamic_cast<CondNoElseElement*>(in->body()->at(0));
+  if (!cond) {
+    return nullptr;
+  }
+  auto when_body = cond->entries.at(0).body;
+  auto activate_let = dynamic_cast<LetElement*>(when_body->at(0));
+  if (!activate_let) {
+    return nullptr;
+  }
+  auto activate_matcher = Matcher::let(
+      false,
+      {LetEntryMatcher::any(Matcher::op(GenericOpMatcher::fixed(FixedOperatorKind::METHOD_OF_TYPE),
+                                        {Matcher::any(), Matcher::constant_token("activate")}),
+                            0)},
+      {Matcher::func(Matcher::reg(Register(Reg::GPR, Reg::T9)),
+                     {Matcher::any(), Matcher::any(1), Matcher::any(2), Matcher::any()})});
+  auto activate_mr = match(activate_matcher, when_body->at(0));
+  if (!activate_mr.matched) {
+    return nullptr;
+  }
+  auto name = activate_mr.maps.forms.find(2);
+  auto to = activate_mr.maps.forms.find(1);
+  auto params_let = dynamic_cast<LetElement*>(when_body->at(1));
+  if (!params_let) {
+    return nullptr;
+  }
+  auto params_matcher = Matcher::unmerged_let(
+      {
+          LetEntryMatcher::any(Matcher::symbol("run-function-in-process")),
+          LetEntryMatcher::any(Matcher::any()),
+          LetEntryMatcher::any(Matcher::symbol("part-tracker-init")),
+          LetEntryMatcher::any(Matcher::any(0)),  // group
+          LetEntryMatcher::any(Matcher::any(1)),  // duration
+          LetEntryMatcher::any(Matcher::any(2)),  // callback
+          LetEntryMatcher::any(Matcher::any(3)),  // userdata
+          LetEntryMatcher::any(Matcher::any(4)),  // target
+          LetEntryMatcher::any(Matcher::any())    // *launch-matrix*
+      },
+      {Matcher::set(Matcher::any(), Matcher::any(5))});
+  auto params_mr = match(params_matcher, when_body->at(1));
+  if (!params_mr.matched) {
+    return nullptr;
+  }
+
+  std::vector<Form*> macro_args;
+  macro_args.push_back(pool.form<ConstantTokenElement>(":to"));
+  macro_args.push_back(to->second);
+  auto name_str = dynamic_cast<StringConstantElement*>(name->second->try_as_single_element());
+  if (name_str && name_str->value() != type) {
+    macro_args.push_back(pool.form<ConstantTokenElement>(":name"));
+    macro_args.push_back(name->second);
+  }
+  auto group = params_mr.maps.forms.find(0);
+  macro_args.push_back(pool.form<ConstantTokenElement>(":group"));
+  macro_args.push_back(group->second);
+  auto duration = params_mr.maps.forms.find(1);
+  if (duration->second->to_string(env) != "0") {
+    macro_args.push_back(pool.form<ConstantTokenElement>(":duration"));
+    macro_args.push_back(duration->second);
+  }
+  auto callback = params_mr.maps.forms.find(2);
+  if (callback->second->to_string(env) != "#f") {
+    macro_args.push_back(pool.form<ConstantTokenElement>(":callback"));
+    macro_args.push_back(callback->second);
+  }
+  auto userdata = params_mr.maps.forms.find(3);
+  if (userdata->second->to_string(env) != "#f") {
+    macro_args.push_back(pool.form<ConstantTokenElement>(":userdata"));
+    macro_args.push_back(userdata->second);
+  }
+  auto target = params_mr.maps.forms.find(4);
+  if (target->second->to_string(env) != "#f") {
+    macro_args.push_back(pool.form<ConstantTokenElement>(":target"));
+    macro_args.push_back(target->second);
+  }
+  auto mat_joint = params_mr.maps.forms.find(5);
+  auto as_deref = mat_joint->second->try_as_element<DerefElement>();
+  if (!as_deref) {
+    return nullptr;
+  }
+  if (!as_deref->tokens().back().is_field_name("quad")) {
+    return nullptr;
+  }
+  as_deref->tokens().pop_back();
+  macro_args.push_back(pool.form<ConstantTokenElement>(":mat-joint"));
+  if (as_deref->tokens().empty()) {
+    macro_args.push_back(as_deref->base());
+  } else {
+    macro_args.push_back(
+        pool.form<DerefElement>(as_deref->base(), as_deref->is_addr_of(), as_deref->tokens()));
+  }
+  return pool
+      .form<GenericElement>(
+          GenericOperator::make_function(pool.form<ConstantTokenElement>("part-tracker-spawn")),
+          macro_args)
+      ->try_as_single_element();
+}
+
+FormElement* rewrite_call_parent_state_handler(LetElement* in, const Env& env, FormPool& pool) {
+  // (let ((t9-3 (-> (find-parent-state) code)))
+  //   (if t9-3
+  //       ((the-as (function none) t9-3))
+  //       )
+  //   )
+  auto mr =
+      Matcher::let(false,
+                   {LetEntryMatcher::any(Matcher::deref(Matcher::func("find-parent-state", {}),
+                                                        false, {DerefTokenMatcher::any_string(1)}),
+                                         0)},
+                   {Matcher::if_no_else(Matcher::any(), Matcher::any(2))});
+  auto let_mr = match(mr, in);
+  if (!let_mr.matched) {
+    return nullptr;
+  }
+  auto handler = let_mr.maps.strings.at(1);
+  auto valid_handlers = {"enter", "trans", "code", "post"};
+  if (std::find(valid_handlers.begin(), valid_handlers.end(), handler) != valid_handlers.end()) {
+    std::vector<Form*> macro_args;
+    macro_args.push_back(pool.form<ConstantTokenElement>(handler));
+    // there are no examples of this being used with args, so that is not handled for now...
+    // auto func = let_mr.maps.forms.at(2);
+    return pool
+        .form<GenericElement>(GenericOperator::make_function(
+                                  pool.form<ConstantTokenElement>("call-parent-state-handler")),
+                              macro_args)
+        ->try_as_single_element();
+  }
+  return nullptr;
+}
+
+FormElement* rewrite_suspend_for(LetElement* in, const Env& env, FormPool& pool) {
+  // (let ((gp-1 (current-time)))
+  //   (until (time-elapsed? gp-1 (seconds 0.5))
+  //     (suspend)
+  //     )
+  //   )
+  // ->
+  // (suspend-for (seconds 0.5))
+  auto until = dynamic_cast<UntilElement*>(in->body()->at(0));
+  if (!until) {
+    return nullptr;
+  }
+  auto mr = Matcher::let(
+      false, {LetEntryMatcher::any(Matcher::func("current-time", {}), 0)},
+      {Matcher::until_loop(Matcher::func("time-elapsed?", {Matcher::any_reg(1), Matcher::any(2)}),
+                           Matcher::any(3))});
+  auto let_mr = match(mr, in);
+  if (!let_mr.matched) {
+    return nullptr;
+  }
+  auto var = let_mr.maps.regs.at(1);
+  auto time = let_mr.maps.forms.at(2);
+  auto body = let_mr.maps.forms.at(3);
+  std::vector<Form*> macro_args;
+  std::vector<FormElement*> macro_elts;
+  macro_args.push_back(time);
+  for (auto& elt : body->elts()) {
+    auto op = dynamic_cast<AtomicOpElement*>(elt);
+    auto suspend = op && op->op() && dynamic_cast<SpecialOp*>(op->op()) &&
+                   dynamic_cast<SpecialOp*>(op->op())->kind() == SpecialOp::Kind::SUSPEND;
+    if (!suspend || elt != body->elts().back()) {
+      elt->apply_form([&](Form* form) {
+        for (auto& e : form->elts()) {
+          auto as_expr = dynamic_cast<SimpleExpressionElement*>(e);
+          if (as_expr) {
+            RegAccessSet regs;
+            as_expr->collect_vars(regs, false);
+            for (auto reg : regs) {
+              if (reg.to_string(env, RegisterAccess::Print::AS_VARIABLE) ==
+                  var.value().to_string(env, RegisterAccess::Print::AS_VARIABLE)) {
+                e = pool.alloc_element<ConstantTokenElement>("time");
+              }
+            }
+          }
+        }
+      });
+      macro_elts.push_back(elt);
+    }
+  }
+  if (!macro_elts.empty()) {
+    for (auto elt : macro_elts) {
+      macro_args.push_back(pool.alloc_single_form(nullptr, elt));
+    }
+  }
+  return pool
+      .form<GenericElement>(
+          GenericOperator::make_function(pool.form<ConstantTokenElement>("suspend-for")),
+          macro_args)
+      ->try_as_single_element();
+}
+
 FormElement* rewrite_proc_new(LetElement* in, const Env& env, FormPool& pool) {
   // this function checks for the process-spawn macros.
   // it uses recursive form scanning to wrap the macro inside a potential "shell"
@@ -1701,7 +1927,18 @@ FormElement* rewrite_proc_new(LetElement* in, const Env& env, FormPool& pool) {
   // part-tracker-spawn macro for jak 3
   if (env.version >= GameVersion::Jak3 &&
       (proc_type == "part-tracker" || proc_type == "part-tracker-subsampler")) {
-    return rewrite_part_tracker_new(proc_type, in, env, pool);
+    auto form = rewrite_part_tracker_new_jak3(proc_type, in, env, pool);
+    if (form) {
+      return form;
+    }
+  }
+
+  // part-tracker-spawn macro for jak 2
+  if (env.version == GameVersion::Jak2 && proc_type == "part-tracker") {
+    auto form = rewrite_part_tracker_new_jak2(proc_type, in, env, pool);
+    if (form) {
+      return form;
+    }
   }
 
   auto macro_form =
@@ -2119,6 +2356,50 @@ FormElement* rewrite_attack_info(LetElement* in, const Env& env, FormPool& pool)
   return elt;
 }
 
+FormElement* rewrite_set_font_single(LetElement* in,
+                                     const Env& env,
+                                     FormPool& pool,
+                                     const char* deref_name,
+                                     const char* op_name,
+                                     bool cast_to_float) {
+  /*
+  (let ((v1-10 gp-0))
+     (set! (-> v1-10 scale) 0.6)
+     )
+  */
+
+  if (in->entries().size() != 1) {
+    return nullptr;
+  }
+  if (in->body()->elts().size() != 1) {
+    return nullptr;
+  }
+
+  Form* font_obj_expr = in->entries().at(0).src;
+  RegisterAccess font_obj_reg = in->entries().at(0).dest;
+
+  if (env.get_variable_type(font_obj_reg, true) != TypeSpec("font-context")) {
+    return nullptr;
+  }
+
+  auto src_matcher =
+      cast_to_float ? Matcher::numeric_cast("float", Matcher::any(0)) : Matcher::any(0);
+  Matcher set_matcher = Matcher::set(Matcher::deref(Matcher::reg(font_obj_reg.reg()), false,
+                                                    {DerefTokenMatcher::string(deref_name)}),
+                                     src_matcher);
+  auto set_mr = match(set_matcher, in->body()->at(0));
+
+  if (!set_mr.matched) {
+    return nullptr;
+  }
+
+  auto elt = pool.alloc_element<GenericElement>(
+      GenericOperator::make_function(pool.form<ConstantTokenElement>(op_name)),
+      std::vector<Form*>{font_obj_expr, set_mr.maps.forms.at(0)});
+  elt->parent_form = in->parent_form;
+  return elt;
+}
+
 /*!
  * Attempt to rewrite a let as another form.  If it cannot be rewritten, this will return nullptr.
  */
@@ -2185,6 +2466,12 @@ FormElement* rewrite_let(LetElement* in, const Env& env, FormPool& pool, LetRewr
     return as_set_vector3;
   }
 
+  auto suspend_for = rewrite_suspend_for(in, env, pool);
+  if (suspend_for) {
+    stats.suspend_for++;
+    return suspend_for;
+  }
+
   auto as_abs_2 = fix_up_abs_2(in, env, pool);
   if (as_abs_2) {
     stats.abs2++;
@@ -2213,6 +2500,30 @@ FormElement* rewrite_let(LetElement* in, const Env& env, FormPool& pool, LetRewr
   if (as_attack_info) {
     stats.attack_info++;
     return as_attack_info;
+  }
+
+  auto as_call_parent_state = rewrite_call_parent_state_handler(in, env, pool);
+  if (as_call_parent_state) {
+    stats.call_parent_state_handler++;
+    return as_call_parent_state;
+  }
+
+  auto as_font_scale = rewrite_set_font_single(in, env, pool, "scale", "set-scale!", false);
+  if (as_font_scale) {
+    stats.font_method++;
+    return as_font_scale;
+  }
+
+  auto as_font_width = rewrite_set_font_single(in, env, pool, "width", "set-width!", true);
+  if (as_font_width) {
+    stats.font_method++;
+    return as_font_width;
+  }
+
+  auto as_font_height = rewrite_set_font_single(in, env, pool, "height", "set-height!", true);
+  if (as_font_height) {
+    stats.font_method++;
+    return as_font_height;
   }
 
   // nothing matched.
@@ -2582,6 +2893,59 @@ FormElement* rewrite_with_dma_buf_add_bucket(LetElement* in, const Env& env, For
   return elt;
 }
 
+FormElement* rewrite_set_font_origin(LetElement* in, const Env& env, FormPool& pool) {
+  /*
+           (let ((v1-9 gp-0)
+                  (a1-1 36)
+                  (a0-4 140)
+                  )
+              (set! (-> v1-9 origin x) (the float a1-1))
+              (set! (-> v1-9 origin y) (the float a0-4))
+              )
+    */
+  if (in->entries().size() != 3) {
+    return nullptr;
+  }
+  if (in->body()->elts().size() != 2) {
+    return nullptr;
+  }
+
+  Form* font_obj_expr = in->entries().at(0).src;
+  RegisterAccess font_obj_reg = in->entries().at(0).dest;
+
+  if (env.get_variable_type(font_obj_reg, true) != TypeSpec("font-context")) {
+    return nullptr;
+  }
+
+  Form* x_val = in->entries().at(1).src;
+  Form* y_val = in->entries().at(2).src;
+
+  Matcher x_matcher = Matcher::set(
+      Matcher::deref(Matcher::reg(font_obj_reg.reg()), false,
+                     {DerefTokenMatcher::string("origin"), DerefTokenMatcher::string("x")}),
+      Matcher::numeric_cast("float", Matcher::reg(in->entries().at(1).dest.reg())));
+  auto x_mr = match(x_matcher, in->body()->at(0));
+
+  Matcher y_matcher = Matcher::set(
+      Matcher::deref(Matcher::reg(font_obj_reg.reg()), false,
+                     {DerefTokenMatcher::string("origin"), DerefTokenMatcher::string("y")}),
+      Matcher::numeric_cast("float", Matcher::reg(in->entries().at(2).dest.reg())));
+  auto y_mr = match(y_matcher, in->body()->at(1));
+
+  if (!x_mr.matched) {
+    return nullptr;
+  }
+  if (!y_mr.matched) {
+    return nullptr;
+  }
+
+  auto elt = pool.alloc_element<GenericElement>(
+      GenericOperator::make_function(pool.form<ConstantTokenElement>("set-origin!")),
+      std::vector<Form*>{font_obj_expr, x_val, y_val});
+  elt->parent_form = in->parent_form;
+  return elt;
+}
+
 FormElement* rewrite_launch_particles(LetElement* in, const Env& env, FormPool& pool) {
   /*
    * (let ((t9-0 sp-launch-particles-var)
@@ -2611,8 +2975,12 @@ FormElement* rewrite_launch_particles(LetElement* in, const Env& env, FormPool& 
   }
 
   auto set_elt = dynamic_cast<SetFormFormElement*>(in->body()->at(0));
+  GenericElement* vector_copy_elt = nullptr;
   if (!set_elt) {
-    return nullptr;
+    vector_copy_elt = dynamic_cast<GenericElement*>(in->body()->at(0));
+    if (!vector_copy_elt || vector_copy_elt->op().to_form(env).print() != "vector-copy!") {
+      return nullptr;
+    }
   }
 
   auto func_elt = dynamic_cast<GenericElement*>(in->body()->at(1));
@@ -2642,19 +3010,24 @@ FormElement* rewrite_launch_particles(LetElement* in, const Env& env, FormPool& 
     return nullptr;
   }
 
-  auto origin = dynamic_cast<DerefElement*>(set_elt->src()->elts().at(0));
-  if (!origin) {
-    return nullptr;
-  }
-  auto tokens = origin->tokens().size();
-  Form* origin_form;
-  // remove only the quad if there are multiple derefs
-  if (tokens > 1) {
-    origin_form = pool.form<DerefElement>(origin->base(), false, origin->tokens());
-    auto orig = dynamic_cast<DerefElement*>(origin_form->elts().at(0));
-    orig->tokens().pop_back();
+  Form* origin_form = nullptr;
+  if (set_elt) {
+    auto origin = dynamic_cast<DerefElement*>(set_elt->src()->elts().at(0));
+    auto tokens = origin->tokens().size();
+    // remove only the quad if there are multiple derefs
+    if (tokens > 1) {
+      origin_form = pool.form<DerefElement>(origin->base(), false, origin->tokens());
+      auto orig = dynamic_cast<DerefElement*>(origin_form->elts().at(0));
+      orig->tokens().pop_back();
+    } else {
+      origin_form = origin->base();
+    }
   } else {
-    origin_form = origin->base();
+    // the vector copy rewrite already did the logic above.
+    origin_form = vector_copy_elt->elts().at(1);
+  }
+  if (!origin_form) {
+    return nullptr;
   }
 
   auto launch_state = func_elt->elts().at(func_elt->elts().size() - 3);
@@ -2730,6 +3103,12 @@ FormElement* rewrite_multi_let(LetElement* in,
       stats.vector_dot++;
       return as_vector_dot;
     }
+  }
+
+  auto as_font_set_origin = rewrite_set_font_origin(in, env, pool);
+  if (as_font_set_origin) {
+    stats.font_method++;
+    return as_font_set_origin;
   }
 
   return in;

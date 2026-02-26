@@ -282,6 +282,7 @@
   "crates.o"
   "mods-rco-h.o"
   "mods-rco.o"
+  "mods-rco-tests.o"
   "hud.o"
   "hud-classes.o"
   "progress-static.o"

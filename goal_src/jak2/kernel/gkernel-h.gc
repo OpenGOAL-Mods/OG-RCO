@@ -160,7 +160,7 @@
    (mask                       process-mask) ;; mask for ticking
    (clock-ratio                float) ;; how fast to run. 1.0 = realtime.
    (accum                      float) ;; fractional time for frame-counter (time-frame units)
-   (integral-accum             float) ;; fractional time for integral (time-frame untis)
+   (integral-accum             float) ;; fractional time for integral (time-frame units)
    (frame-counter              time-frame) ;; how much time has gone by since reset (time-frame units)
    (old-frame-counter          time-frame) ;; the frame-counter on the last engine iteration
    (integral-frame-counter     uint64) ;; how many vsyncs have gone by since reset
@@ -724,3 +724,6 @@
 (defmacro time-elapsed? (time duration)
   `(>= (- (current-time) ,time) ,duration)
   )
+
+(defmacro suspend-for (time &rest body)
+  `(let ((time (current-time))) (until (time-elapsed? time ,time) ,@body (suspend))))
